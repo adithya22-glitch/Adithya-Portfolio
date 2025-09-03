@@ -19,7 +19,7 @@ import ESGBankImg from "./assets/projects/ESGBank.png";
 
 // ==== LOCAL TECH ICONS ====
 import apacheairflow from "./assets/icons/apacheairflow.svg";
-import cppIcon from "./assets/icons/cpp.svg";
+import cppIcon from "./assets/icons/Cpp.svg";
 import dbtIcon from "./assets/icons/dbt.svg";
 import dockerIcon from "./assets/icons/docker.svg";
 import gitIcon from "./assets/icons/git.svg";
