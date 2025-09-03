@@ -459,15 +459,15 @@ type ExpItem = {
 
 const experienceData: ExpItem[] = [
   {
-    title: "Intern",
-    company: "Indian Institute of Information Technology (IIIT) Allahabad",
-    period: "07/2019 – 08/2019",
+    title: "Web Developer",
+    company: "NatureScan LLP, Bengaluru",
+    period: "07/2022 – 03/2023",
     bullets: [
-      "Built an Image Processing unit using Optical Flow in Python.",
-      "Optimized for real-time CCTV insights with minimal compute.",
-      "Improved interpretation of live streams for resource-limited settings.",
+      "Shipped high-performance sites; +12% revenue & reach uplift above forecast.",
+      "Launched user-centric features that grew traffic and digital asset value.",
+      "Improved SEO and cross-browser reliability with testing & optimizations.",
     ],
-    image: IIITLogo,
+    image: NaturescanLogo,
   },
   {
     title: "Trainee-Engineer",
@@ -481,15 +481,15 @@ const experienceData: ExpItem[] = [
     image: PacecomLogo,
   },
   {
-    title: "Web Developer",
-    company: "NatureScan LLP, Bengaluru",
-    period: "07/2022 – 03/2023",
+    title: "Intern",
+    company: "Indian Institute of Information Technology (IIIT) Allahabad",
+    period: "07/2019 – 08/2019",
     bullets: [
-      "Shipped high-performance sites; +12% revenue & reach uplift above forecast.",
-      "Launched user-centric features that grew traffic and digital asset value.",
-      "Improved SEO and cross-browser reliability with testing & optimizations.",
+      "Built an Image Processing unit using Optical Flow in Python.",
+      "Optimized for real-time CCTV insights with minimal compute.",
+      "Improved interpretation of live streams for resource-limited settings.",
     ],
-    image: NaturescanLogo,
+    image: IIITLogo,
   },
 ];
 
@@ -566,6 +566,7 @@ const Experience = () => (
     </div>
   </Container>
 );
+
 
 // ---------- PROJECTS ----------
 type Project = {
