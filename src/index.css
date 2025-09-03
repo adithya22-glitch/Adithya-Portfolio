@@ -1,0 +1,227 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Smooth scrolling */
+html { scroll-behavior: smooth; }
+
+/* =========================
+   Local Fonts (relative to src/index.css)
+   ========================= */
+@font-face {
+  font-family: "Source Code Pro";
+  src: url("./assets/fonts/Source_Code_Pro/static/SourceCodePro-Black.ttf") format("truetype");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Source Code Pro";
+  src: url("./assets/fonts/Source_Code_Pro/static/SourceCodePro-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* === IBM Plex Mono (replaces Major Mono Display) === */
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("./assets/fonts/IBM_Plex_Mono/IBMPlexMono-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("./assets/fonts/IBM_Plex_Mono/IBMPlexMono-Medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("./assets/fonts/IBM_Plex_Mono/IBMPlexMono-SemiBold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("./assets/fonts/IBM_Plex_Mono/IBMPlexMono-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "VT323";
+  src: url("./assets/fonts/VT323/VT323-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* =========================
+   Font usage
+   ========================= */
+
+/* Slightly larger base so VT323 doesn't look tiny */
+html { font-size: 18px; }
+
+/* Default body font = VT323 (normal texts) */
+body {
+  font-family: "VT323", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  text-rendering: optimizeLegibility;
+}
+
+/* Headers use Source Code Pro (bold/black) */
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Source Code Pro", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-weight: 900; /* change to 700 if you want slightly lighter */
+}
+
+/* Card/box content -> IBM Plex Mono */
+.border.bg-white {
+  font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  letter-spacing: 0.01em;
+}
+
+/* Optional utilities (used in JSX) */
+.font-normal-text { font-family: "VT323", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+.font-headers     { font-family: "Source Code Pro", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-weight: 900; }
+/* Replaced Major Mono with IBM Plex Mono */
+.font-box         { font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; letter-spacing: .01em; }
+
+/* =========================
+   Scroll reveal (for animated headers)
+   ========================= */
+.reveal {
+  opacity: 0;
+  transform: translateY(12px) scale(0.98);
+  filter: blur(2px);
+  transition:
+    opacity .7s cubic-bezier(.22,.61,.36,1),
+    transform .7s cubic-bezier(.22,.61,.36,1),
+    filter .7s cubic-bezier(.22,.61,.36,1);
+  will-change: opacity, transform, filter;
+}
+.reveal--in {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  filter: blur(0);
+}
+
+/* =========================
+   Animated Cursor (Glass Ring)
+   ========================= */
+
+/* Hide the native cursor when App adds .cursor-none to <html> */
+html.cursor-none,
+html.cursor-none * { cursor: none !important; }
+
+/* But keep native caret where it matters */
+input, textarea, [contenteditable="true"] {
+  cursor: text !important;
+}
+
+/* Allow selects to feel normal */
+select { cursor: default !important; }
+
+/* Cursor node base styles (JS handles position/scale) */
+.custom-cursor {
+  /* Size can be tweaked via CSS variables if you want later */
+  --cursor-size: 28px;
+  width: var(--cursor-size);
+  height: var(--cursor-size);
+  border-radius: 9999px;
+  pointer-events: none;
+  position: fixed;
+  left: 0; top: 0;
+  z-index: 60;
+  border: 1px solid rgba(0, 0, 0, .35);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  mix-blend-mode: multiply;
+  box-shadow:
+    0 6px 18px rgba(0,0,0,.15),
+    inset 0 0 0 2px rgba(255,255,255,.25);
+  background:
+    radial-gradient(33% 33% at 30% 30%,
+      rgba(255,255,255,.45),
+      rgba(255,255,255,.05) 60%,
+      rgba(255,255,255,0) 100%);
+  transform: translate(-50%, -50%) scale(0);
+  transition: transform 120ms ease-out;
+}
+
+/* ===== Magnetic cursor variants (used by Cursor.tsx) ===== */
+.custom-cursor[data-variant="hover"] {
+  box-shadow:
+    0 10px 24px rgba(0,0,0,.18),
+    inset 0 0 0 2px rgba(255,255,255,.35);
+}
+
+.custom-cursor[data-variant="magnetic"] {
+  mix-blend-mode: difference;
+  border-color: rgba(255,255,255,.6);
+  box-shadow:
+    0 14px 30px rgba(0,0,0,.22),
+    inset 0 0 0 2px rgba(255,255,255,.55);
+  background:
+    radial-gradient(33% 33% at 30% 30%,
+      rgba(255,255,255,.75),
+      rgba(255,255,255,.10) 60%,
+      rgba(255,255,255,0) 100%);
+}
+
+/* Disable on touch devices (no pointer/hover) */
+@media (pointer: coarse), (hover: none) {
+  html.cursor-none, html.cursor-none * { cursor: auto !important; }
+  .custom-cursor { display: none !important; }
+}
+
+/* Respect reduced motion: restore native cursor and hide FX */
+@media (prefers-reduced-motion: reduce) {
+  html.cursor-none, html.cursor-none * { cursor: auto !important; }
+  .custom-cursor { display: none !important; }
+}
+
+/* =========================
+   Fibonacci background animations (used by <GoldenBackground/>)
+   ========================= */
+.fib-rotate {
+  animation: fib-rotate var(--rotDur, 30s) linear infinite;
+  animation-delay: var(--delay, 0s);
+  will-change: transform;
+  transform-style: preserve-3d;
+}
+
+.fib-float {
+  animation:
+    fib-float var(--floatDur, 14s) ease-in-out infinite alternate,
+    fib-hue   var(--gradDur, 20s) linear infinite;
+  animation-delay: var(--delay, 0s);
+  will-change: transform, filter, opacity;
+}
+
+@keyframes fib-rotate {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to   { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+@keyframes fib-float {
+  0%   { transform: translateY(-6%); }
+  100% { transform: translateY(6%); }
+}
+
+@keyframes fib-hue {
+  0%   { filter: hue-rotate(0deg); }
+  100% { filter: hue-rotate(360deg); }
+}
+
+/* Global reduced motion fallback for other animations */
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .fib-rotate,
+  .fib-float { animation: none !important; transition: none !important; }
+}
