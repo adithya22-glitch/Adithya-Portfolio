@@ -5,10 +5,8 @@ import {
   Code2, Atom, Database, Brain
 } from "lucide-react";
 
-// ---- View counter ----
 import ViewCounter from "./components/ViewCounter";
 
-// **** logo & project image imports ****
 import IIITLogo from "./assets/WXlogo/IIIT_logo_transparent.gif";
 import NaturescanLogo from "./assets/WXlogo/naturescan.jpg";
 import PacecomLogo from "./assets/WXlogo/pacecom.jpg";
@@ -17,7 +15,6 @@ import ComingSoonImg from "./assets/projects/comingsoon.jpg";
 import SelfDrivingBusImg from "./assets/projects/selfdrivingbus.jpg";
 import ESGBankImg from "./assets/projects/ESGBank.png";
 
-// ==== LOCAL TECH ICONS ====
 import apacheairflow from "./assets/icons/apacheairflow.svg";
 import cppIcon from "./assets/icons/Cpp.svg";
 import dbtIcon from "./assets/icons/dbt.svg";
@@ -52,8 +49,8 @@ const Container = ({
   className?: string;
   children: React.ReactNode;
 }) => (
-  <section id={id} className={`scroll-mt-24 py-16 md:py-24 ${className}`}>
-    <div className="mx-auto w-full max-w-6xl px-6 md:px-8">{children}</div>
+  <section id={id} className={`scroll-mt-24 py-12 sm:py-16 md:py-24 ${className}`}>
+    <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 md:px-8">{children}</div>
   </section>
 );
 
@@ -69,7 +66,7 @@ const Badge = ({
   </span>
 );
 
-// ---------- Button ----------
+// ---------- Links / Buttons ----------
 type AnchorProps = React.ComponentProps<"a"> & { as?: "a" };
 type NativeButtonProps = React.ComponentProps<"button"> & { as?: "button" };
 type ButtonProps = AnchorProps | NativeButtonProps;
@@ -80,6 +77,8 @@ const Button = ({ as = "button", children, className = "", ...props }: ButtonPro
     return (
       <a
         href={href}
+        target="_blank"
+        rel="noopener noreferrer"
         className={`inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-semibold transition hover:-translate-y-0.5 hover:shadow ${className}`}
         {...rest}
       >
@@ -97,92 +96,28 @@ const Button = ({ as = "button", children, className = "", ...props }: ButtonPro
   );
 };
 
-// ---------- Scroll spy ----------
-const useScrollSpy = (ids: string[]) => {
-  const [active, setActive] = useState(ids[0]);
+// ---------- SAFE media hooks (no crash on older browsers) ----------
+const useSafeMatch = (query: string, initial = false) => {
+  const [matches, setMatches] = useState<boolean>(initial);
   useEffect(() => {
-    const observers: IntersectionObserver[] = [];
-    ids.forEach((id) => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      const obs = new IntersectionObserver(
-        (entries) => entries.forEach((e) => e.isIntersecting && setActive(id)),
-        { rootMargin: "-60% 0px -35% 0px", threshold: [0, 0.2, 0.5, 1] }
-      );
-      obs.observe(el);
-      observers.push(obs);
-    });
-    return () => observers.forEach((o) => o.disconnect());
-  }, [ids.join(",")]);
-  return active;
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") return;
+    const mq = window.matchMedia(query);
+    const onChange = (e: MediaQueryListEvent | MediaQueryList) =>
+      setMatches("matches" in e ? e.matches : (e as MediaQueryList).matches);
+
+    setMatches(mq.matches);
+    // support old Safari
+    // @ts-expect-error
+    mq.addEventListener ? mq.addEventListener("change", onChange) : mq.addListener(onChange);
+    return () => {
+      // @ts-expect-error
+      mq.removeEventListener ? mq.removeEventListener("change", onChange) : mq.removeListener(onChange);
+    };
+  }, [query]);
+  return matches;
 };
-
-// ---------- NAV ----------
-const sections = [
-  { id: "home", label: "Home" },
-  { id: "about", label: "About" },
-  { id: "skills", label: "Skills" },
-  { id: "experience", label: "Experience" },
-  { id: "projects", label: "Projects" },
-  { id: "contact", label: "Contact" },
-];
-
-const Nav = () => {
-  const active = useScrollSpy(sections.map((s) => s.id));
-  const [open, setOpen] = useState(false);
-  useEffect(() => {
-    const handler = () => setOpen(false);
-    window.addEventListener("hashchange", handler);
-    return () => window.removeEventListener("hashchange", handler);
-  }, []);
-
-  return (
-    <header className="sticky top-0 z-50 w-full backdrop-blur supports-[backdrop-filter]:bg-white/60 border-b">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3 md:px-8">
-        <a href="#home" className="group inline-flex items-center gap-2 font-bold">
-          <span className="h-8 w-8 rounded-xl bg-gradient-to-br from-blue-600 to-emerald-400 grid place-items-center text-white shadow">A</span>
-          <span className="tracking-tight">Adithya Varambally</span>
-        </a>
-        <nav className="hidden md:flex items-center gap-1">
-          {sections.map((s) => (
-            <a
-              key={s.id}
-              href={`#${s.id}`}
-              className={`rounded-xl px-3 py-2 text-sm font-medium transition ${active === s.id ? "bg-black text-white" : "hover:bg-neutral-100"}`}
-              aria-current={active === s.id ? "page" : undefined}
-            >
-              {s.label}
-            </a>
-          ))}
-        </nav>
-        <div className="flex items-center gap-2">
-          <a href="https://github.com/adithya22-glitch" target="_blank" className="hidden md:inline-flex p-2 rounded-xl hover:bg-neutral-100" aria-label="GitHub" rel="noreferrer">
-            <Github className="h-5 w-5" />
-          </a>
-          <a href="https://www.linkedin.com/in/adithya-varambally-m/" target="_blank" className="hidden md:inline-flex p-2 rounded-xl hover:bg-neutral-100" aria-label="LinkedIn" rel="noreferrer">
-            <Linkedin className="h-5 w-5" />
-          </a>
-          <button className="md:hidden p-2 rounded-xl hover:bg-neutral-100" onClick={() => setOpen((v) => !v)} aria-label="Toggle menu">
-            {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </button>
-        </div>
-      </div>
-      {open && (
-        <div className="md:hidden border-t bg-white">
-          <div className="mx-auto max-w-6xl px-6 py-2">
-            <nav className="grid gap-1">
-              {sections.map((s) => (
-                <a key={s.id} href={`#${s.id}`} className={`rounded-xl px-3 py-2 text-sm font-medium ${active === s.id ? "bg-black text-white" : "hover:bg-neutral-100"}`}>
-                  {s.label}
-                </a>
-              ))}
-            </nav>
-          </div>
-        </div>
-      )}
-    </header>
-  );
-};
+const usePrefersReducedMotion = () => useSafeMatch("(prefers-reduced-motion: reduce)", false);
+const useIsMobile = () => useSafeMatch("(max-width: 640px)", false);
 
 /* ===== Reveal-on-scroll ===== */
 const useInViewOnce = (options?: IntersectionObserverInit) => {
@@ -191,7 +126,7 @@ const useInViewOnce = (options?: IntersectionObserverInit) => {
 
   useEffect(() => {
     const el = ref.current;
-    if (!el || inView) return;
+    if (!el || inView || typeof IntersectionObserver === "undefined") return;
     const obs = new IntersectionObserver(([entry]) => {
       if (entry.isIntersecting) {
         setInView(true);
@@ -224,8 +159,29 @@ const Reveal = ({
   );
 };
 
+// Scroll spy
+const useScrollSpy = (ids: string[]) => {
+  const [active, setActive] = useState(ids[0]);
+  useEffect(() => {
+    if (typeof IntersectionObserver === "undefined") return;
+    const observers: IntersectionObserver[] = [];
+    ids.forEach((id) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const obs = new IntersectionObserver(
+        (entries) => entries.forEach((e) => e.isIntersecting && setActive(id)),
+        { rootMargin: "-60% 0px -35% 0px", threshold: [0, 0.2, 0.5, 1] }
+      );
+      obs.observe(el);
+      observers.push(obs);
+    });
+    return () => observers.forEach((o) => o.disconnect());
+  }, [ids.join(",")]);
+  return active;
+};
+
 // === Golden Fibonacci Background ===
-const GoldenBackground = () => {
+const GoldenBackground = ({ mobile = false }: { mobile?: boolean }) => {
   const PHI = (1 + Math.sqrt(5)) / 2;
   const fibs = [1, 1, 2, 3, 5, 8, 13, 21];
 
@@ -246,10 +202,16 @@ const GoldenBackground = () => {
           transparent 100%)`;
 
         const delay    = `${(f * 0.25).toFixed(2)}s`;
-        const rotDur   = `${22 + i * 3}s`;
-        const floatDur = `${10 + i * 2}s`;
-        const gradDur  = `${16 + i * 2}s`;
-        const opacity  = Math.min(0.75, 0.22 + i * 0.06);
+        const rotDur   = mobile ? `${30 + i * 4}s` : `${22 + i * 3}s`;
+        const floatDur = mobile ? `${16 + i * 3}s` : `${10 + i * 2}s`;
+        const gradDur  = mobile ? `${40 + i * 4}s` : `${16 + i * 2}s`;
+        const opacity  = mobile
+          ? Math.min(0.45, 0.18 + i * 0.05)
+          : Math.min(0.75, 0.22 + i * 0.06);
+
+        const mobileFloatOnly: CSSProperties | undefined = mobile
+          ? { animation: `fib-float var(--floatDur) ease-in-out infinite alternate` } // no hue-rotate on mobile
+          : undefined;
 
         return (
           <div
@@ -276,6 +238,7 @@ const GoldenBackground = () => {
                   ["--delay" as any]: delay,
                   ["--floatDur" as any]: floatDur,
                   ["--gradDur" as any]: gradDur,
+                  ...mobileFloatOnly,
                 } as CSSProperties
               }
             />
@@ -286,25 +249,99 @@ const GoldenBackground = () => {
   );
 };
 
+// ---------- NAV ----------
+const sections = [
+  { id: "home", label: "Home" },
+  { id: "about", label: "About" },
+  { id: "skills", label: "Skills" },
+  { id: "experience", label: "Experience" },
+  { id: "projects", label: "Projects" },
+  { id: "contact", label: "Contact" },
+];
+
+const Nav = () => {
+  const active = useScrollSpy(sections.map((s) => s.id));
+  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    const handler = () => setOpen(false);
+    window.addEventListener("hashchange", handler);
+    return () => window.removeEventListener("hashchange", handler);
+  }, []);
+
+  return (
+    <header className="sticky top-0 z-50 w-full backdrop-blur supports-[backdrop-filter]:bg-white/60 border-b shadow-[0_1px_0_rgba(0,0,0,0.03)]">
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3 md:px-8">
+        <a href="#home" className="group inline-flex items-center gap-2 font-bold">
+          <span className="h-8 w-8 rounded-xl bg-gradient-to-br from-blue-600 to-emerald-400 grid place-items-center text-white shadow">A</span>
+          <span className="tracking-tight">Adithya Varambally</span>
+        </a>
+        <nav className="hidden md:flex items-center gap-1">
+          {sections.map((s) => (
+            <a
+              key={s.id}
+              href={`#${s.id}`}
+              className={`rounded-xl px-3 py-2 text-sm font-medium transition ${active === s.id ? "bg-black text-white" : "hover:bg-neutral-100"}`}
+              aria-current={active === s.id ? "page" : undefined}
+            >
+              {s.label}
+            </a>
+          ))}
+        </nav>
+        <div className="flex items-center gap-2">
+          <a href="https://github.com/adithya22-glitch" target="_blank" className="hidden md:inline-flex p-2 rounded-xl hover:bg-neutral-100" aria-label="GitHub" rel="noopener noreferrer">
+            <Github className="h-5 w-5" />
+          </a>
+          <a href="https://www.linkedin.com/in/adithya-varambally-m/" target="_blank" className="hidden md:inline-flex p-2 rounded-xl hover:bg-neutral-100" aria-label="LinkedIn" rel="noopener noreferrer">
+            <Linkedin className="h-5 w-5" />
+          </a>
+          <button className="md:hidden p-2 rounded-xl hover:bg-neutral-100" onClick={() => setOpen((v) => !v)} aria-label="Toggle menu">
+            {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
+        </div>
+      </div>
+      {open && (
+        <div className="md:hidden border-t bg-white">
+          <div className="mx-auto max-w-6xl px-6 py-2">
+            <nav className="grid gap-1">
+              {sections.map((s) => (
+                <a
+                  key={s.id}
+                  href={`#${s.id}`}
+                  onClick={() => setOpen(false)}
+                  className={`rounded-xl px-3 py-2 text-sm font-medium ${active === s.id ? "bg-black text-white" : "hover:bg-neutral-100"}`}
+                >
+                  {s.label}
+                </a>
+              ))}
+            </nav>
+          </div>
+        </div>
+      )}
+    </header>
+  );
+};
+
 // ---------- HERO ----------
 const Hero = () => {
   return (
     <Container id="home" className="relative">
       <div className="pointer-events-none absolute inset-0 -z-10 opacity-50 [background:radial-gradient(1200px_600px_at_50%_-10%,theme(colors.blue.200),transparent_60%)]" />
-      <div className="grid items-center gap-10 md:grid-cols-2">
+      <div className="grid items-center gap-6 sm:gap-10 md:grid-cols-2">
         <div>
           <Badge className="font-box">Data • AI • Engineering</Badge>
-          <Reveal as="h1" className="font-headers mt-6 text-4xl font-black tracking-tight md:text-5xl">
+          <Reveal as="h1" className="font-headers mt-4 sm:mt-6 text-3xl sm:text-4xl md:text-5xl font-black tracking-tight">
             Building useful AI-powered products & data systems
           </Reveal>
-          <p className="mt-4 text-neutral-600 text-base md:text-lg">
+          <p className="mt-3 sm:mt-4 text-neutral-600 text-base md:text-lg">
             I’m a Berlin-based builder focused on clean data pipelines, LLM apps and fast, accessible interfaces.
           </p>
-          <div className="mt-6 flex flex-wrap items-center gap-3">
+          <div className="mt-5 sm:mt-6 flex flex-wrap items-center gap-3">
             <Button as="a" href="#contact">Contact <Mail className="h-4 w-4" /></Button>
           </div>
 
-          {/* Global site views */}
+          <div className="mt-3">
+            <ViewCounter id="site" />
+          </div>
         </div>
         <div className="relative">
           <div className="aspect-video w-full rounded-3xl border shadow-sm bg-gradient-to-br from-neutral-50 to-neutral-100 grid place-items-center">
@@ -330,7 +367,7 @@ const SKILLS: Skill[] = [
   { name: "React", src: reactIcon },
   { name: "TailwindCSS", src: tailwindIcon },
   { name: "Node / npm", src: javascriptIcon },
-  { name: "Sqllite", src: sqliteIcon },
+  { name: "SQLite", src: sqliteIcon },
   { name: "PostgreSQL", src: postgresqlIcon },
   { name: "Git", src: gitIcon },
   { name: "Docker", src: dockerIcon },
@@ -376,7 +413,7 @@ const Skills = () => (
       Main Tech Stack<span className="">.</span>
     </Reveal>
 
-    <div className="mt-10 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-x-8 gap-y-10 place-items-center">
+    <div className="mt-10 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-x-6 sm:gap-x-8 gap-y-8 sm:gap-y-10 place-items-center">
       {SKILLS.filter(s => !!s.src).map((s) => (
         <div key={s.name} className="flex flex-col items-center gap-3">
           <HexBadge src={s.src} alt={s.name} />
@@ -429,7 +466,6 @@ const About = () => (
       </p>
     </div>
 
-    {/* Inline Skills cards */}
     <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
       {aboutSkills.map(({ title, subtitle, Icon }) => (
         <div
@@ -493,7 +529,7 @@ const experienceData: ExpItem[] = [
 ];
 
 const Dot = () => (
-  <span className="relative z-10 inline-block h-3 w-3 rounded-full bg-black ring-4 ring-white" />
+  <span className="block h-4 w-4 rounded-full bg-white ring-4 ring-neutral-900 shadow-sm" />
 );
 
 const Experience = () => (
@@ -503,22 +539,27 @@ const Experience = () => (
       Work Experience<span>.</span>
     </Reveal>
 
-    {/* timeline line */}
-    <div className="relative mt-10">
-      <div className="absolute left-1/2 top-0 -ml-px h-full w-px bg-neutral-200 md:block hidden" aria-hidden />
-      <ol className="space-y-16">
-        {experienceData.map((item, idx) => {
-          const isLeft = idx % 2 === 0;
-          return (
-            <li key={item.title + item.company} className="relative grid md:grid-cols-2 md:gap-8">
-              {/* connector + dot */}
-              <div className="absolute left-1/2 -ml-1 hidden md:block">
-                <Dot />
-              </div>
+    {/* rails: mobile left, desktop center */}
+    <div aria-hidden>
+      <div className="absolute left-6 top-28 bottom-8 w-px bg-neutral-900/80 md:hidden" />
+      <div className="absolute top-28 bottom-8 left-1/2 -ml-px hidden w-px bg-neutral-200 md:block" />
+    </div>
 
-              {/* card side */}
-              <div className={`${isLeft ? "md:pr-8 md:col-start-1" : "md:pl-8 md:col-start-2"} md:row-start-1`}>
-                <div className="rounded-3xl border bg-white p-6 shadow-sm">
+    <ol className="mt-10 space-y-10 md:space-y-16">
+      {experienceData.map((item, idx) => {
+        const isLeft = idx % 2 === 0;
+
+        return (
+          <li key={item.title + item.company} className="relative">
+            {/* marker */}
+            <div className="absolute -left-[2px] top-2 md:left-1/2 md:-translate-x-1/2">
+              <Dot />
+            </div>
+
+            <div className="pl-16 md:pl-0 grid md:grid-cols-2 md:gap-8">
+              {/* card */}
+              <div className={`md:row-start-1 ${isLeft ? "md:col-start-1 md:pr-8" : "md:col-start-2 md:pl-8"}`}>
+                <Reveal className="rounded-3xl border bg-white p-6 shadow-sm">
                   <div className="flex flex-wrap items-baseline justify-between gap-2">
                     <div className="font-headers text-lg font-bold tracking-tight">
                       {item.title}
@@ -531,25 +572,20 @@ const Experience = () => (
                       <li key={b}>{b}</li>
                     ))}
                   </ul>
-                </div>
+                </Reveal>
               </div>
 
-              {/* image container side */}
-              <div className={`${isLeft ? "md:col-start-2" : "md:col-start-1"} md:row-start-1 flex items-center justify-center`}>
-                <div className="h-40 w-40 rounded-2xl bg-neutral-100 flex items-center justify-center overflow-hidden">
-                  <img
-                    src={item.image}
-                    alt={item.company}
-                    loading="lazy"
-                    className="h-full w-full object-contain rounded-2xl"
-                  />
+              {/* logo */}
+              <div className={`mt-4 md:mt-0 md:row-start-1 flex items-center justify-start md:justify-center ${isLeft ? "md:col-start-2" : "md:col-start-1"}`}>
+                <div className="h-14 w-14 rounded-xl bg-neutral-100 flex items-center justify-center overflow-hidden ring-1 ring-neutral-200">
+                  <img src={item.image} alt={item.company} loading="lazy" className="h-full w-full object-contain" />
                 </div>
               </div>
-            </li>
-          );
-        })}
-      </ol>
-    </div>
+            </div>
+          </li>
+        );
+      })}
+    </ol>
   </Container>
 );
 
@@ -563,27 +599,9 @@ type Project = {
 };
 
 const projects: Project[] = [
-  {
-    title: "Coming soon",
-    desc: "........",
-    href: "#",
-    img: ComingSoonImg,
-    tags: ["React", "TypeScript", "RAG", "and much more"],
-  },
-  {
-    title: "Carla-RL Bus",
-    desc: "Reinforcement learning experiment in CARLA simulator.",
-    href: "https://github.com/adithya22-glitch/Carla-RL",
-    img: SelfDrivingBusImg,
-    tags: ["Python", "RL", "CARLA"],
-  },
-  {
-    title: "Data Stack Demo",
-    desc: "End-to-end ELT → dbt → dashboards on Snowflake.",
-    href: "https://github.com/adithya22-glitch/Python_Snowflake_and_DBT",
-    img: ESGBankImg,
-    tags: ["Snowflake", "dbt", "Airflow"],
-  },
+  { title: "Coming soon", desc: "........", href: "#", img: ComingSoonImg, tags: ["React", "TypeScript", "RAG", "and much more"] },
+  { title: "Carla-RL Bus", desc: "Reinforcement learning experiment in CARLA simulator.", href: "https://github.com/adithya22-glitch/Carla-RL", img: SelfDrivingBusImg, tags: ["Python", "RL", "CARLA"] },
+  { title: "Data Stack Demo", desc: "End-to-end ELT → dbt → dashboards on Snowflake.", href: "https://github.com/adithya22-glitch/Python_Snowflake_and_DBT", img: ESGBankImg, tags: ["Snowflake", "dbt", "Airflow"] },
 ];
 
 const Projects = () => (
@@ -592,17 +610,22 @@ const Projects = () => (
       <Reveal as="h2" className="font-headers text-2xl font-bold tracking-tight">Projects</Reveal>
       <a href="#" className="font-box text-sm underline underline-offset-4">See all</a>
     </div>
-    <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+    <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {projects.map((p) => {
         const id = `project-${slugify(p.title)}`;
         const card = (
           <div className="group rounded-2xl border bg-white p-5 transition hover:-translate-y-1 hover:shadow">
             <div className="aspect-video w-full overflow-hidden rounded-xl bg-neutral-100">
-              <img src={p.img} alt={p.title} loading="lazy" className="h-full w-full object-cover" />
+              <img
+                src={p.img}
+                alt={p.title}
+                loading="lazy"
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                className="h-full w-full object-cover"
+              />
             </div>
             <div className="mt-4 flex items-center justify-between">
               <div className="font-headers font-semibold">{p.title}</div>
-              {/* Per-project views (compact) */}
               <ViewCounter id={id} />
             </div>
             <p className="mt-1 text-sm text-neutral-600">{p.desc}</p>
@@ -616,7 +639,7 @@ const Projects = () => (
           </div>
         );
         return p.href && p.href !== "#"
-          ? <a key={p.title} href={p.href} target="_blank" rel="noreferrer">{card}</a>
+          ? <a key={p.title} href={p.href} target="_blank" rel="noopener noreferrer">{card}</a>
           : <div key={p.title} aria-disabled className="opacity-90 cursor-default">{card}</div>;
       })}
     </div>
@@ -662,7 +685,6 @@ const Contact = () => {
   return (
     <Container id="contact">
       <div className="grid gap-8 md:grid-cols-2">
-        {/* Left: intro + buttons */}
         <div>
           <Reveal as="h2" className="font-headers text-2xl font-bold tracking-tight">Let’s talk</Reveal>
           <p className="mt-3 text-neutral-600">
@@ -670,11 +692,11 @@ const Contact = () => {
           </p>
 
           <div className="mt-6 flex flex-wrap gap-3">
-            <Button as="a" href="https://www.linkedin.com/in/adithya-varambally-m/" target="_blank" rel="noreferrer">
+            <Button as="a" href="https://www.linkedin.com/in/adithya-varambally-m/" target="_blank" rel="noopener noreferrer">
               <Linkedin className="h-4 w-4" />
               LinkedIn
             </Button>
-            <Button as="a" href="https://github.com/adithya22-glitch" target="_blank" rel="noreferrer">
+            <Button as="a" href="https://github.com/adithya22-glitch" target="_blank" rel="noopener noreferrer">
               <Github className="h-4 w-4" />
               GitHub
             </Button>
@@ -682,22 +704,21 @@ const Contact = () => {
               <Mail className="h-4 w-4" />
               Email
             </Button>
-            <Button as="a" href={resumePdf} target="_blank" rel="noreferrer" download>
+            <Button as="a" href={resumePdf} target="_blank" rel="noopener noreferrer" download>
               <ExternalLink className="h-4 w-4" />
               Resume
             </Button>
           </div>
         </div>
 
-        {/* Right: form */}
-        <form onSubmit={onSubmit} className="rounded-2xl border p-6 bg-white">
+        <form onSubmit={onSubmit} className="rounded-2xl border p-5 sm:p-6 bg-white">
           <label className="font-headers block text-sm font-medium">Your email</label>
           <input
             required
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="mt-1 w-full rounded-xl border px-3 py-2"
+            className="mt-1 w-full rounded-xl border px-3 py-3 text-base"
             placeholder="you@domain.com"
           />
 
@@ -706,7 +727,7 @@ const Contact = () => {
             required
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            className="mt-1 h-28 w-full resize-none rounded-xl border p-3"
+            className="mt-1 h-32 sm:h-28 w-full resize-none rounded-xl border p-3 text-base"
             placeholder="Hi Adithya, I’d like to…"
           />
 
@@ -741,8 +762,8 @@ const Footer = () => (
     <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-6 md:flex-row md:px-8">
       <p className="text-sm text-neutral-600">© {new Date().getFullYear()} Adithya Varambally</p>
       <div className="flex items-center gap-2">
-        <a className="p-2 rounded-xl hover:bg-neutral-100" href="https://github.com/adithya22-glitch" target="_blank" aria-label="GitHub" rel="noreferrer"><Github className="h-5 w-5"/></a>
-        <a className="p-2 rounded-xl hover:bg-neutral-100" href="https://www.linkedin.com/in/adithya-varambally-m/" target="_blank" aria-label="LinkedIn" rel="noreferrer"><Linkedin className="h-5 w-5"/></a>
+        <a className="p-2 rounded-xl hover:bg-neutral-100" href="https://github.com/adithya22-glitch" target="_blank" aria-label="GitHub" rel="noopener noreferrer"><Github className="h-5 w-5"/></a>
+        <a className="p-2 rounded-xl hover:bg-neutral-100" href="https://www.linkedin.com/in/adithya-varambally-m/" target="_blank" aria-label="LinkedIn" rel="noopener noreferrer"><Linkedin className="h-5 w-5"/></a>
       </div>
     </div>
   </footer>
@@ -753,9 +774,31 @@ export default function App() {
   useEffect(() => {
     document.documentElement.classList.add("scroll-smooth");
   }, []);
+
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const isMobile = useIsMobile();
+
+  // If anything in the background were to throw, keep the app visible:
+  let bg: React.ReactNode = null;
+  try {
+    if (!prefersReducedMotion) {
+      bg = <GoldenBackground mobile={isMobile} />;
+    }
+  } catch {
+    bg = (
+      <div
+        className="fixed inset-0 -z-10"
+        style={{
+          background:
+            "radial-gradient(1200px 600px at 50% -10%, rgba(191,219,254,0.35), transparent 60%)",
+        }}
+      />
+    );
+  }
+
   return (
     <div className="relative min-h-svh text-neutral-900">
-      <GoldenBackground />
+      {bg}
       <div className="relative z-10">
         <Nav />
         <main>

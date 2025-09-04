@@ -5,6 +5,16 @@
 /* Smooth scrolling */
 html { scroll-behavior: smooth; }
 
+/* Prevent accidental horizontal scrolling on small screens */
+html, body { overflow-x: hidden; }
+
+/* Make media elements responsive by default */
+img, video, canvas, svg { max-width: 100%; height: auto; }
+
+/* Improve text rendering & mobile font scaling */
+html { -webkit-text-size-adjust: 100%; }
+body { text-rendering: optimizeLegibility; }
+
 /* =========================
    Local Fonts (relative to src/index.css)
    ========================= */
@@ -71,7 +81,6 @@ html { font-size: 18px; }
 /* Default body font = VT323 (normal texts) */
 body {
   font-family: "VT323", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  text-rendering: optimizeLegibility;
 }
 
 /* Headers use Source Code Pro (bold/black) */
