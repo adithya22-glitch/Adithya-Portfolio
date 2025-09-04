@@ -102,17 +102,29 @@ const useSafeMatch = (query: string, initial = false) => {
   useEffect(() => {
     if (typeof window === "undefined" || typeof window.matchMedia !== "function") return;
     const mq = window.matchMedia(query);
-    const onChange = (e: MediaQueryListEvent | MediaQueryList) =>
-      setMatches("matches" in e ? e.matches : (e as MediaQueryList).matches);
+
+    const onChange = (e: MediaQueryListEvent | MediaQueryList) => {
+      // handle both modern and old Safari callback shapes
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const anyE = e as any;
+      setMatches(Boolean(anyE.matches));
+    };
 
     setMatches(mq.matches);
-    // support old Safari
-    // @ts-expect-error
-    mq.addEventListener ? mq.addEventListener("change", onChange) : mq.addListener(onChange);
-    return () => {
-      // @ts-expect-error
-      mq.removeEventListener ? mq.removeEventListener("change", onChange) : mq.removeListener(onChange);
-    };
+
+    // modern
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const anyMq = mq as any;
+    if (typeof anyMq.addEventListener === "function") {
+      anyMq.addEventListener("change", onChange);
+      return () => anyMq.removeEventListener("change", onChange);
+    }
+    // legacy
+    if (typeof anyMq.addListener === "function") {
+      anyMq.addListener(onChange);
+      return () => anyMq.removeListener(onChange);
+    }
+    return () => {};
   }, [query]);
   return matches;
 };
@@ -151,9 +163,21 @@ const Reveal = ({
   children: React.ReactNode;
   amount?: number;
 }) => {
+  const isMobile = useIsMobile();
   const { ref, inView } = useInViewOnce({ threshold: amount, rootMargin: "0px 0px -10% 0px" });
+
+  // Mobile-only: slightly shorter/softer transition to prevent shimmer,
+  // desktop remains as defined in global .reveal CSS.
+  const mobileStyle: CSSProperties | undefined = isMobile
+    ? { transition: "opacity .45s ease, transform .45s ease, filter .45s ease" }
+    : undefined;
+
   return (
-    <Tag ref={ref} className={`reveal ${inView ? "reveal--in" : ""} ${className}`}>
+    <Tag
+      ref={ref}
+      className={`reveal ${inView ? "reveal--in" : ""} ${className}`}
+      style={mobileStyle}
+    >
       {children}
     </Tag>
   );
@@ -778,7 +802,7 @@ export default function App() {
   const prefersReducedMotion = usePrefersReducedMotion();
   const isMobile = useIsMobile();
 
-  // If anything in the background were to throw, keep the app visible:
+  // Background safe-guard
   let bg: React.ReactNode = null;
   try {
     if (!prefersReducedMotion) {
