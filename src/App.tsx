@@ -305,9 +305,6 @@ const Hero = () => {
           </div>
 
           {/* Global site views */}
-          <div className="mt-3">
-            <ViewCounter id="site" />
-          </div>
         </div>
         <div className="relative">
           <div className="aspect-video w-full rounded-3xl border shadow-sm bg-gradient-to-br from-neutral-50 to-neutral-100 grid place-items-center">
