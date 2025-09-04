@@ -129,7 +129,6 @@ select { cursor: default !important; }
 
 /* Cursor node base styles (JS handles position/scale) */
 .custom-cursor {
-  /* Size can be tweaked via CSS variables if you want later */
   --cursor-size: 28px;
   width: var(--cursor-size);
   height: var(--cursor-size);
@@ -219,9 +218,20 @@ select { cursor: default !important; }
   100% { filter: hue-rotate(360deg); }
 }
 
+/* =========================
+   Motion & mobile adjustments
+   ========================= */
+
 /* Global reduced motion fallback for other animations */
 @media (prefers-reduced-motion: reduce) {
   .reveal,
   .fib-rotate,
   .fib-float { animation: none !important; transition: none !important; }
+}
+
+/* On small screens, tone down background intensity
+   (and slightly reduce base font-size for spacing) */
+@media (max-width: 640px) {
+  .fib-float { opacity: 0.35 !important; }
+  html { font-size: 16px; }
 }

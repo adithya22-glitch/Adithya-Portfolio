@@ -5,7 +5,7 @@ import {
   Code2, Atom, Database, Brain
 } from "lucide-react";
 
-// ---- View counter (single import) ----
+// ---- View counter ----
 import ViewCounter from "./components/ViewCounter";
 
 // **** logo & project image imports ****
@@ -40,12 +40,18 @@ import resumePdf from "./assets/Adithya_Varambally_Resume.pdf";
 
 // ---------- Utils ----------
 const slugify = (s: string) =>
-  s.toLowerCase().trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)+/g, "");
+  s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
 
 // ---------- Shared UI ----------
-const Container = ({ id, className = "", children }: { id?: string; className?: string; children: React.ReactNode }) => (
+const Container = ({
+  id,
+  className = "",
+  children,
+}: {
+  id?: string;
+  className?: string;
+  children: React.ReactNode;
+}) => (
   <section id={id} className={`scroll-mt-24 py-16 md:py-24 ${className}`}>
     <div className="mx-auto w-full max-w-6xl px-6 md:px-8">{children}</div>
   </section>
@@ -58,9 +64,7 @@ const Badge = ({
   children: React.ReactNode;
   className?: string;
 }) => (
-  <span
-    className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium tracking-wide ${className}`}
-  >
+  <span className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium tracking-wide ${className}`}>
     {children}
   </span>
 );
@@ -83,7 +87,6 @@ const Button = ({ as = "button", children, className = "", ...props }: ButtonPro
       </a>
     );
   }
-
   return (
     <button
       className={`inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-semibold transition hover:-translate-y-0.5 hover:shadow ${className}`}
@@ -145,9 +148,8 @@ const Nav = () => {
             <a
               key={s.id}
               href={`#${s.id}`}
-              className={`rounded-xl px-3 py-2 text-sm font-medium transition ${
-                active === s.id ? "bg-black text-white" : "hover:bg-neutral-100"
-              }`}
+              className={`rounded-xl px-3 py-2 text-sm font-medium transition ${active === s.id ? "bg-black text-white" : "hover:bg-neutral-100"}`}
+              aria-current={active === s.id ? "page" : undefined}
             >
               {s.label}
             </a>
@@ -331,14 +333,13 @@ const SKILLS: Skill[] = [
   { name: "React", src: reactIcon },
   { name: "TailwindCSS", src: tailwindIcon },
   { name: "Node / npm", src: javascriptIcon },
-  { name: "MongoDB", src: sqliteIcon.replace("sqlite.svg","../icons/mongodb.svg") },
+  { name: "Sqllite", src: sqliteIcon },
   { name: "PostgreSQL", src: postgresqlIcon },
   { name: "Git", src: gitIcon },
   { name: "Docker", src: dockerIcon },
   { name: "dbt", src: dbtIcon },
   { name: "Airflow", src: apacheairflow },
   { name: "Snowflake", src: snowflakeIcon },
-  { name: "SQLite", src: sqliteIcon },
   { name: "Tableau", src: tableauIcon },
   { name: "Power BI", src: powerBiIcon },
   { name: "Jira", src: jirasoftwareIcon },
@@ -363,6 +364,7 @@ const HexBadge = ({ src, alt }: { src: string; alt: string }) => {
       <img
         src={src}
         alt={alt}
+        loading="lazy"
         className="h-10 w-10 md:h-12 md:w-12 drop-shadow"
         style={{ filter: "drop-shadow(0 2px 2px rgba(0,0,0,.4))" }}
       />
@@ -506,29 +508,19 @@ const Experience = () => (
 
     {/* timeline line */}
     <div className="relative mt-10">
-      <div
-        className="absolute left-1/2 top-0 -ml-px h-full w-px bg-neutral-200 md:block hidden"
-        aria-hidden
-      />
+      <div className="absolute left-1/2 top-0 -ml-px h-full w-px bg-neutral-200 md:block hidden" aria-hidden />
       <ol className="space-y-16">
         {experienceData.map((item, idx) => {
           const isLeft = idx % 2 === 0;
           return (
-            <li
-              key={item.title + item.company}
-              className="relative grid md:grid-cols-2 md:gap-8"
-            >
+            <li key={item.title + item.company} className="relative grid md:grid-cols-2 md:gap-8">
               {/* connector + dot */}
               <div className="absolute left-1/2 -ml-1 hidden md:block">
                 <Dot />
               </div>
 
               {/* card side */}
-              <div
-                className={`${
-                  isLeft ? "md:pr-8 md:col-start-1" : "md:pl-8 md:col-start-2"
-                } md:row-start-1`}
-              >
+              <div className={`${isLeft ? "md:pr-8 md:col-start-1" : "md:pl-8 md:col-start-2"} md:row-start-1`}>
                 <div className="rounded-3xl border bg-white p-6 shadow-sm">
                   <div className="flex flex-wrap items-baseline justify-between gap-2">
                     <div className="font-headers text-lg font-bold tracking-tight">
@@ -546,15 +538,12 @@ const Experience = () => (
               </div>
 
               {/* image container side */}
-              <div
-                className={`${
-                  isLeft ? "md:col-start-2" : "md:col-start-1"
-                } md:row-start-1 flex items-center justify-center`}
-              >
+              <div className={`${isLeft ? "md:col-start-2" : "md:col-start-1"} md:row-start-1 flex items-center justify-center`}>
                 <div className="h-40 w-40 rounded-2xl bg-neutral-100 flex items-center justify-center overflow-hidden">
                   <img
                     src={item.image}
                     alt={item.company}
+                    loading="lazy"
                     className="h-full w-full object-contain rounded-2xl"
                   />
                 </div>
@@ -566,7 +555,6 @@ const Experience = () => (
     </div>
   </Container>
 );
-
 
 // ---------- PROJECTS ----------
 type Project = {
@@ -613,11 +601,11 @@ const Projects = () => (
         const card = (
           <div className="group rounded-2xl border bg-white p-5 transition hover:-translate-y-1 hover:shadow">
             <div className="aspect-video w-full overflow-hidden rounded-xl bg-neutral-100">
-              <img src={p.img} alt={p.title} className="h-full w-full object-cover" />
+              <img src={p.img} alt={p.title} loading="lazy" className="h-full w-full object-cover" />
             </div>
             <div className="mt-4 flex items-center justify-between">
               <div className="font-headers font-semibold">{p.title}</div>
-              {/* Per-project views (compact placement in header row) */}
+              {/* Per-project views (compact) */}
               <ViewCounter id={id} />
             </div>
             <p className="mt-1 text-sm text-neutral-600">{p.desc}</p>
@@ -631,16 +619,8 @@ const Projects = () => (
           </div>
         );
         return p.href && p.href !== "#"
-          ? (
-            <a key={p.title} href={p.href} target="_blank" rel="noreferrer">
-              {card}
-            </a>
-          )
-          : (
-            <div key={p.title} aria-disabled className="opacity-90 cursor-default">
-              {card}
-            </div>
-          );
+          ? <a key={p.title} href={p.href} target="_blank" rel="noreferrer">{card}</a>
+          : <div key={p.title} aria-disabled className="opacity-90 cursor-default">{card}</div>;
       })}
     </div>
   </Container>
@@ -705,7 +685,6 @@ const Contact = () => {
               <Mail className="h-4 w-4" />
               Email
             </Button>
-            {/* ✅ Fixed: single Resume button */}
             <Button as="a" href={resumePdf} target="_blank" rel="noreferrer" download>
               <ExternalLink className="h-4 w-4" />
               Resume
