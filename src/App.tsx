@@ -368,13 +368,7 @@ const Hero = () => {
           </div>
 
         </div>
-        <div className="relative">
-          <div className="aspect-video w-full rounded-3xl border shadow-sm bg-gradient-to-br from-neutral-50 to-neutral-100 grid place-items-center">
-            <div className="text-center p-8">
-              <div className="font-headers text-6xl md:text-7xl font-black tracking-tighter">AV</div>
-              <p className="mt-2 text-sm text-neutral-500">Creative technologist & data engineer</p>
-            </div>
-          </div>
+       
         </div>
       </div>
     </Container>
