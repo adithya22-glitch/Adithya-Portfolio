@@ -380,7 +380,10 @@ const Hero = () => {
     </Container>
   );
 }
+<<<<<<< HEAD
 
+=======
+>>>>>>> 1ae6dd85a063b7b82507fe1ac20fe4e268edd879
 // ---------- SKILLS ----------
 type Skill = { name: string; src: string };
 
