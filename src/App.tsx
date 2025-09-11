@@ -297,7 +297,7 @@ const Nav = () => {
   }, []);
 
   return (
-    <header className="sticky top-0 z-50 w-full backdrop-blur supports-[backdrop-filter]:bg-white/60 border-b shadow-[0_1px_0_rgba(0,0,0,0.03)]">
+    <header className="fixed top-0 left-0 right-0 z-50 w-full backdrop-blur supports-[backdrop-filter]:bg-white/60 border-b shadow-[0_1px_0_rgba(0,0,0,0.03)]">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3 md:px-8">
         <a href="#home" className="group inline-flex items-center gap-2 font-bold">
           <span className="h-8 w-8 rounded-xl bg-gradient-to-br from-blue-600 to-emerald-400 grid place-items-center text-white shadow">A</span>
