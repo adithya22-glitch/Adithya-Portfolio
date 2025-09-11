@@ -15,6 +15,7 @@ import ComingSoonImg from "./assets/projects/comingsoon.jpg";
 import SelfDrivingBusImg from "./assets/projects/selfdrivingbus.jpg";
 import ESGBankImg from "./assets/projects/ESGBank.png";
 import imageToTextImg from "./assets/projects/imagetotext.png";
+import robertGreeneImg from "./assets/projects/robertgreenepng.png";
 import manyProjectsImg from "./assets/projects/manyprojects.png";
 
 import apacheairflow from "./assets/icons/apacheairflow.svg";
@@ -360,10 +361,14 @@ const Hero = () => {
             Building useful AI-powered products & data systems
           </Reveal>
           <p className="mt-3 sm:mt-4 text-neutral-600 text-base md:text-lg">
-            Turning complex data into clarity, building AI that thinks fast, learns smart, and delivers impact people can feel. Off-screen, I’m a curious creator who loves chess, design, and turning problems into playful puzzles.
+            I’m a Berlin-based builder focused on clean data pipelines, LLM apps and fast, accessible interfaces.
           </p>
           <div className="mt-5 sm:mt-6 flex flex-wrap items-center gap-3">
             <Button as="a" href="#contact">Contact <Mail className="h-4 w-4" /></Button>
+          </div>
+
+          <div className="mt-3">
+            <ViewCounter id="site" />
           </div>
         </div>
         <div className="relative">
@@ -441,7 +446,7 @@ const Skills = () => (
       {SKILLS.filter(s => !!s.src).map((s) => (
         <div key={s.name} className="flex flex-col items-center gap-3">
           <HexBadge src={s.src} alt={s.name} />
-          <span className="text-sm text-neutral-400">{s.name}</span>
+          <span className="text-sm text-black">{s.name}</span>
         </div>
       ))}
     </div>
@@ -653,6 +658,13 @@ const projects: Project[] = [
     img: imageToTextImg,
     tags: ["Python", "tesseract", "opencv-python"],
   },
+  {
+    title: "48-LawsOfPower-LLM",
+    desc: "Fine-tuned TinyLLaMA on The 48 Laws of Power using LoRA for low-VRAM inference.",
+    href: "https://github.com/adithya22-glitch/48-laws-of-Power-guide",
+    img: robertGreeneImg,
+    tags: ["Python", "Hugging Face Transformers", "PyTorch"],
+  },  
   {
     title: "Old projects",
     desc: "A collection of earlier ML experiments and utilities built while learning—OpenAI Gym, OpenCV, and more.",
