@@ -366,10 +366,7 @@ const Hero = () => {
           <div className="mt-5 sm:mt-6 flex flex-wrap items-center gap-3">
             <Button as="a" href="#contact">Contact <Mail className="h-4 w-4" /></Button>
           </div>
-
-          <div className="mt-3">
-            <ViewCounter id="site" />
-          </div>
+          {/* A view counter was here before */}
         </div>
         <div className="relative">
           <div className="aspect-video w-full rounded-3xl border shadow-sm bg-gradient-to-br from-neutral-50 to-neutral-100 grid place-items-center">
@@ -382,7 +379,7 @@ const Hero = () => {
       </div>
     </Container>
   );
-};
+}
 // ---------- SKILLS ----------
 type Skill = { name: string; src: string };
 
