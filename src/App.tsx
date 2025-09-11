@@ -360,14 +360,10 @@ const Hero = () => {
             Building useful AI-powered products & data systems
           </Reveal>
           <p className="mt-3 sm:mt-4 text-neutral-600 text-base md:text-lg">
-            I’m a Berlin-based builder focused on clean data pipelines, LLM apps and fast, accessible interfaces.
+            Turning complex data into clarity, building AI that thinks fast, learns smart, and delivers impact people can feel. Off-screen, I’m a curious creator who loves chess, design, and turning problems into playful puzzles.
           </p>
           <div className="mt-5 sm:mt-6 flex flex-wrap items-center gap-3">
             <Button as="a" href="#contact">Contact <Mail className="h-4 w-4" /></Button>
-          </div>
-
-          <div className="mt-3">
-            <ViewCounter id="site" />
           </div>
         </div>
         <div className="relative">
