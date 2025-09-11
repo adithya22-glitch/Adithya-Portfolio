@@ -14,6 +14,8 @@ import PacecomLogo from "./assets/WXlogo/pacecom.jpg";
 import ComingSoonImg from "./assets/projects/comingsoon.jpg";
 import SelfDrivingBusImg from "./assets/projects/selfdrivingbus.jpg";
 import ESGBankImg from "./assets/projects/ESGBank.png";
+import imageToTextImg from "./assets/projects/imagetotext.png";
+import manyProjectsImg from "./assets/projects/manyprojects.png";
 
 import apacheairflow from "./assets/icons/apacheairflow.svg";
 import cppIcon from "./assets/icons/Cpp.svg";
@@ -32,6 +34,7 @@ import sqliteIcon from "./assets/icons/sqlite.svg";
 import tableauIcon from "./assets/icons/tableau-software.svg";
 import tailwindIcon from "./assets/icons/tailwindcss.svg";
 import typescriptIcon from "./assets/icons/typescript.svg";
+import npmIcon from "./assets/icons/npm.svg";
 
 import resumePdf from "./assets/Adithya_Varambally_Resume.pdf";
 
@@ -390,7 +393,7 @@ const SKILLS: Skill[] = [
   { name: "Python", src: pythonIcon },
   { name: "React", src: reactIcon },
   { name: "TailwindCSS", src: tailwindIcon },
-  { name: "Node / npm", src: javascriptIcon },
+  { name: "Node / npm", src:   npmIcon },
   { name: "SQLite", src: sqliteIcon },
   { name: "PostgreSQL", src: postgresqlIcon },
   { name: "Git", src: gitIcon },
@@ -402,6 +405,7 @@ const SKILLS: Skill[] = [
   { name: "Power BI", src: powerBiIcon },
   { name: "Jira", src: jirasoftwareIcon },
   { name: "OpenAI Gym", src: openaigymIcon },
+
 ];
 
 const HexBadge = ({ src, alt }: { src: string; alt: string }) => {
@@ -623,9 +627,43 @@ type Project = {
 };
 
 const projects: Project[] = [
-  { title: "Coming soon", desc: "........", href: "#", img: ComingSoonImg, tags: ["React", "TypeScript", "RAG", "and much more"] },
-  { title: "Carla-RL Bus", desc: "Reinforcement learning experiment in CARLA simulator.", href: "https://github.com/adithya22-glitch/Carla-RL", img: SelfDrivingBusImg, tags: ["Python", "RL", "CARLA"] },
-  { title: "Data Stack Demo", desc: "End-to-end ELT → dbt → dashboards on Snowflake.", href: "https://github.com/adithya22-glitch/Python_Snowflake_and_DBT", img: ESGBankImg, tags: ["Snowflake", "dbt", "Airflow"] },
+  {
+    title: "Coming soon",
+    desc: "........",
+    href: "#",
+    img: ComingSoonImg,
+    tags: ["React", "TypeScript", "RAG", "and much more"],
+  },
+  {
+    title: "Carla-RL Bus",
+    desc: "Reinforcement learning experiment in CARLA simulator.",
+    href: "https://github.com/adithya22-glitch/Carla-RL",
+    img: SelfDrivingBusImg,
+    tags: ["Python", "RL", "CARLA"],
+  },
+  {
+    title: "Data Stack Demo",
+    desc: "End-to-end ELT → dbt → dashboards on Snowflake.",
+    href: "https://github.com/adithya22-glitch/Python_Snowflake_and_DBT",
+    img: ESGBankImg,
+    tags: ["Snowflake", "dbt", "Airflow"],
+  },
+
+  // NEW
+  {
+    title: "Image_to_text_OCR",
+    desc: "Lightweight OCR tool using Tesseract + OpenCV to extract text from images (scans, receipts, photos).",
+    href: "https://github.com/adithya22-glitch/Image_to_text_OCR",
+    img: imageToTextImg,
+    tags: ["Python", "tesseract", "opencv-python"],
+  },
+  {
+    title: "Old projects",
+    desc: "A collection of earlier ML experiments and utilities built while learning—OpenAI Gym, OpenCV, and more.",
+    href: "https://github.com/adithya22-glitch/OLD_GhostEagle",
+    img: manyProjectsImg,
+    tags: ["Python", "OpenAI Gym", "opencv-python"],
+  },
 ];
 
 const Projects = () => (
