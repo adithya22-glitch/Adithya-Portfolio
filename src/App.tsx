@@ -380,33 +380,39 @@ const Hero = () => {
     </Container>
   );
 }
-<<<<<<< HEAD
 
-=======
->>>>>>> 1ae6dd85a063b7b82507fe1ac20fe4e268edd879
 // ---------- SKILLS ----------
 type Skill = { name: string; src: string };
 
 const SKILLS: Skill[] = [
-  { name: "JavaScript", src: javascriptIcon },
-  { name: "C++", src: cppIcon },
-  { name: "TypeScript", src: typescriptIcon },
+  // Core Programming
   { name: "Python", src: pythonIcon },
-  { name: "React", src: reactIcon },
-  { name: "TailwindCSS", src: tailwindIcon },
-  { name: "Node / npm", src:   npmIcon },
-  { name: "SQLite", src: sqliteIcon },
-  { name: "PostgreSQL", src: postgresqlIcon },
-  { name: "Git", src: gitIcon },
-  { name: "Docker", src: dockerIcon },
+  { name: "SQL", src: sqliteIcon }, // SQLite placeholder for SQL
+  { name: "C++", src: cppIcon },
+  { name: "JavaScript", src: javascriptIcon },
+
+  // Data & Pipelines
+  { name: "Snowflake", src: snowflakeIcon },
   { name: "dbt", src: dbtIcon },
   { name: "Airflow", src: apacheairflow },
-  { name: "Snowflake", src: snowflakeIcon },
-  { name: "Tableau", src: tableauIcon },
-  { name: "Power BI", src: powerBiIcon },
-  { name: "Jira", src: jirasoftwareIcon },
-  { name: "OpenAI Gym", src: openaigymIcon },
+  { name: "PostgreSQL", src: postgresqlIcon },
 
+  // ML / AI Frameworks
+  { name: "OpenAI Gym", src: openaigymIcon },
+  { name: "React", src: reactIcon }, // UI/secondary
+  { name: "TailwindCSS", src: tailwindIcon }, // UI/secondary
+
+  // Infra & Cloud
+  { name: "Docker", src: dockerIcon },
+  { name: "Git", src: gitIcon },
+  { name: "Node / npm", src: npmIcon },
+
+  // Visualization
+  { name: "Power BI", src: powerBiIcon },
+  { name: "Tableau", src: tableauIcon },
+
+  // Project/Collab Tools
+  { name: "Jira", src: jirasoftwareIcon },
 ];
 
 const HexBadge = ({ src, alt }: { src: string; alt: string }) => {
