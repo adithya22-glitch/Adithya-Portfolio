@@ -389,6 +389,7 @@ const SKILLS: Skill[] = [
   { name: "Python", src: pythonIcon },
   { name: "SQL", src: sqliteIcon }, // SQLite placeholder for SQL
   { name: "C++", src: cppIcon },
+  { name: "TypeScript", src: typescriptIcon },
   { name: "JavaScript", src: javascriptIcon },
 
   // Data & Pipelines
@@ -414,6 +415,7 @@ const SKILLS: Skill[] = [
   // Project/Collab Tools
   { name: "Jira", src: jirasoftwareIcon },
 ];
+
 
 const HexBadge = ({ src, alt }: { src: string; alt: string }) => {
   const hexClip =
