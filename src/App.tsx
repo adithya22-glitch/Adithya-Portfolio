@@ -445,7 +445,9 @@ const HexBadge = ({ src, alt }: { src: string; alt: string }) => {
 
 const Skills = () => (
   <Container id="skills" className="relative">
-    <p className="font-box text-center text-xs tracking-[0.3em] text-neutral-400">TECHNICAL SKILLS</p>
+    <p className="font-box text-center text-xs tracking-[0.3em] text-neutral-700">TECHNICAL SKILLS</p>
+
+    
     <Reveal as="h2" className="font-headers mt-2 text-center text-4xl md:text-5xl font-black tracking-tight">
       Main Tech Stack<span className="">.</span>
     </Reveal>
