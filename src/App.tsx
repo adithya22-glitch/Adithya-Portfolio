@@ -135,6 +135,60 @@ const useSafeMatch = (query: string, initial = false) => {
 const usePrefersReducedMotion = () => useSafeMatch("(prefers-reduced-motion: reduce)", false);
 const useIsMobile = () => useSafeMatch("(max-width: 640px)", false);
 
+// Performance detection for very low-end devices
+const useLowEndDevice = () => {
+  const [isLowEnd, setIsLowEnd] = useState(false);
+  
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    
+    // Check for low-end device indicators
+    const isLowEndDevice = 
+      navigator.hardwareConcurrency <= 2 || // 2 or fewer CPU cores
+      /Android.*Chrome\/[0-5]\./.test(navigator.userAgent) || // Old Android Chrome
+      /iPhone.*OS [0-9]_/.test(navigator.userAgent) || // Old iOS
+      (navigator as any).deviceMemory && (navigator as any).deviceMemory <= 2; // 2GB or less RAM
+    
+    setIsLowEnd(isLowEndDevice);
+  }, []);
+  
+  return isLowEnd;
+};
+
+// Performance monitoring for struggling devices
+const usePerformanceMonitor = () => {
+  const [isStruggling, setIsStruggling] = useState(false);
+  
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    
+    let frameCount = 0;
+    let lastTime = performance.now();
+    
+    const checkPerformance = () => {
+      frameCount++;
+      const currentTime = performance.now();
+      
+      if (currentTime - lastTime >= 1000) { // Check every second
+        const fps = frameCount;
+        frameCount = 0;
+        lastTime = currentTime;
+        
+        // If FPS is consistently below 30, consider it struggling
+        if (fps < 30) {
+          setIsStruggling(true);
+        }
+      }
+      
+      requestAnimationFrame(checkPerformance);
+    };
+    
+    requestAnimationFrame(checkPerformance);
+  }, []);
+  
+  return isStruggling;
+};
+
 /* ===== Reveal-on-scroll ===== */
 const useInViewOnce = (options?: IntersectionObserverInit) => {
   const ref = useRef<HTMLElement | null>(null);
@@ -170,17 +224,23 @@ const Reveal = ({
   const isMobile = useIsMobile();
   const { ref, inView } = useInViewOnce({ threshold: amount, rootMargin: "0px 0px -10% 0px" });
 
-  // Mobile-only: slightly shorter/softer transition to prevent shimmer,
-  // desktop remains as defined in global .reveal CSS.
-  const mobileStyle: CSSProperties | undefined = isMobile
-    ? { transition: "opacity .45s ease, transform .45s ease, filter .45s ease" }
-    : undefined;
+  // On mobile, always show content immediately without animations
+  if (isMobile) {
+    return (
+      <Tag
+        ref={ref}
+        className={`${className}`}
+      >
+        {children}
+      </Tag>
+    );
+  }
 
+  // Desktop: use reveal animations
   return (
     <Tag
       ref={ref}
       className={`reveal ${inView ? "reveal--in" : ""} ${className}`}
-      style={mobileStyle}
     >
       {children}
     </Tag>
@@ -211,30 +271,32 @@ const useScrollSpy = (ids: string[]) => {
 // === Golden Fibonacci Background ===
 const GoldenBackground = ({ mobile = false }: { mobile?: boolean }) => {
   const PHI = (1 + Math.sqrt(5)) / 2;
-  const fibs = [1, 1, 2, 3, 5, 8, 13, 21];
+  const fibs = mobile ? [1, 2, 5, 8] : [1, 1, 2, 3, 5, 8, 13, 21]; // Fewer elements on mobile
 
   return (
     <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
       {fibs.map((f, i) => {
-        const base = 18;
+        const base = mobile ? 24 : 18; // Larger base on mobile for fewer elements
         const sq = base * f;
         const isLandscape = i % 2 === 0;
-        const w = (isLandscape ? sq * PHI : sq) * 12;
-        const h = (isLandscape ? sq : sq * PHI) * 12;
+        const w = (isLandscape ? sq * PHI : sq) * (mobile ? 8 : 12); // Smaller on mobile
+        const h = (isLandscape ? sq : sq * PHI) * (mobile ? 8 : 12);
 
         const hue = (f * 137.5) % 360;
         const hue2 = (hue + 55) % 360;
-        const gradient = `radial-gradient(70% 90% at 50% 50%,
-          hsl(${hue} 80% 60% / .35) 0%,
-          hsl(${hue2} 80% 55% / .35) 60%,
-          transparent 100%)`;
+        const gradient = mobile 
+          ? `radial-gradient(70% 90% at 50% 50%, hsl(${hue} 60% 50% / .2) 0%, transparent 80%)` // Simpler gradient on mobile
+          : `radial-gradient(70% 90% at 50% 50%,
+              hsl(${hue} 80% 60% / .35) 0%,
+              hsl(${hue2} 80% 55% / .35) 60%,
+              transparent 100%)`;
 
         const delay    = `${(f * 0.25).toFixed(2)}s`;
-        const rotDur   = mobile ? `${30 + i * 4}s` : `${22 + i * 3}s`;
-        const floatDur = mobile ? `${16 + i * 3}s` : `${10 + i * 2}s`;
-        const gradDur  = mobile ? `${40 + i * 4}s` : `${16 + i * 2}s`;
+        const rotDur   = mobile ? `${60 + i * 8}s` : `${22 + i * 3}s`; // Much slower on mobile
+        const floatDur = mobile ? `${40 + i * 6}s` : `${10 + i * 2}s`; // Much slower on mobile
+        const gradDur  = mobile ? `${80 + i * 8}s` : `${16 + i * 2}s`; // Much slower on mobile
         const opacity  = mobile
-          ? Math.min(0.45, 0.18 + i * 0.05)
+          ? Math.min(0.25, 0.1 + i * 0.03) // Much lower opacity on mobile
           : Math.min(0.75, 0.22 + i * 0.06);
 
         const mobileFloatOnly: CSSProperties | undefined = mobile
@@ -617,7 +679,7 @@ const Experience = () => (
               {/* logo */}
               <div className={`mt-4 md:mt-0 md:row-start-1 flex items-center justify-start md:justify-center ${isLeft ? "md:col-start-2" : "md:col-start-1"}`}>
                 <div className="h-14 w-14 rounded-xl bg-neutral-100 flex items-center justify-center overflow-hidden ring-1 ring-neutral-200">
-                  <img src={item.image} alt={item.company} loading="lazy" className="h-full w-full object-contain" />
+                  <img src={item.image} alt={item.company} loading="lazy" decoding="async" className="h-full w-full object-contain" />
                 </div>
               </div>
             </div>
@@ -700,6 +762,7 @@ const Projects = () => (
                 src={p.img}
                 alt={p.title}
                 loading="lazy"
+                decoding="async"
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                 className="h-full w-full object-cover"
               />
@@ -855,14 +918,47 @@ export default function App() {
     document.documentElement.classList.add("scroll-smooth");
   }, []);
 
+  // Pause animations when page is not visible
+  useEffect(() => {
+    const onVis = () => {
+      document.documentElement.style.setProperty('--pauseAnims', document.hidden ? 'paused' : 'running');
+    };
+    document.addEventListener('visibilitychange', onVis);
+    onVis();
+    return () => document.removeEventListener('visibilitychange', onVis);
+  }, []);
+
   const prefersReducedMotion = usePrefersReducedMotion();
   const isMobile = useIsMobile();
+  const isLowEnd = useLowEndDevice();
+  const isStruggling = usePerformanceMonitor();
 
-  // Background safe-guard
+  // Add mobile class to body for CSS targeting
+  useEffect(() => {
+    if (isMobile) {
+      document.body.classList.add('mobile-device');
+    } else {
+      document.body.classList.remove('mobile-device');
+    }
+    return () => document.body.classList.remove('mobile-device');
+  }, [isMobile]);
+
+  // Background safe-guard with mobile performance consideration
   let bg: React.ReactNode = null;
   try {
-    if (!prefersReducedMotion) {
+    if (!prefersReducedMotion && !isLowEnd && !isMobile && !isStruggling) {
+      // Only high-performance desktop devices get animated background
       bg = <GoldenBackground mobile={isMobile} />;
+    } else if (isMobile || isLowEnd || isStruggling) {
+      // Mobile, low-end, and struggling devices get simple static background
+      bg = (
+        <div
+          className="fixed inset-0 -z-10"
+          style={{
+            background: "radial-gradient(800px 400px at 50% -10%, rgba(191,219,254,0.1), transparent 80%)",
+          }}
+        />
+      );
     }
   } catch {
     bg = (
@@ -877,7 +973,7 @@ export default function App() {
   }
 
   return (
-    <div className="relative min-h-svh text-neutral-900">
+    <div className={`relative min-h-svh text-neutral-900 ${isLowEnd ? 'low-end-device' : ''}`}>
       {bg}
       <div className="relative z-10">
         <Nav />

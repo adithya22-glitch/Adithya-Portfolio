@@ -200,7 +200,7 @@ select { cursor: default !important; }
 .fib-rotate {
   animation: fib-rotate var(--rotDur, 30s) linear infinite;
   animation-delay: var(--delay, 0s);
-  will-change: transform;
+  will-change: transform, opacity;
   transform-style: preserve-3d;
 }
 
@@ -231,6 +231,11 @@ select { cursor: default !important; }
    Motion & mobile adjustments
    ========================= */
 
+/* Pause animations when page is not visible */
+.fib-rotate, .fib-float { 
+  animation-play-state: var(--pauseAnims, running); 
+}
+
 /* Global reduced motion fallback for other animations */
 @media (prefers-reduced-motion: reduce) {
   .reveal,
@@ -238,9 +243,120 @@ select { cursor: default !important; }
   .fib-float { animation: none !important; transition: none !important; }
 }
 
+/* Low-end device optimizations */
+.low-end-device {
+  /* Disable all animations and transitions */
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+  
+  /* Simplify all shadows */
+  * {
+    box-shadow: none !important;
+  }
+  
+  /* Remove backdrop filters */
+  * {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  
+  /* Remove transforms */
+  .hover\:-translate-y-0\.5:hover,
+  .group:hover .group-hover\:-translate-y-1 {
+    transform: none !important;
+  }
+}
+
 /* On small screens, tone down background intensity
    (and slightly reduce base font-size for spacing) */
 @media (max-width: 640px) {
-  .fib-float { opacity: 0.35 !important; }
   html { font-size: 16px; }
+  
+  /* COMPLETELY DISABLE ALL ANIMATIONS ON MOBILE */
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+  
+  /* Disable all background animations */
+  .fib-rotate, .fib-float {
+    display: none !important;
+  }
+  
+  /* Disable header blur on mobile for better performance */
+  .supports-\[backdrop-filter\]\:bg-white\/60 { 
+    background: #ffffff !important; 
+  }
+  header { 
+    backdrop-filter: none !important; 
+    -webkit-backdrop-filter: none !important; 
+  }
+  
+  /* Disable all reveal animations on mobile */
+  .reveal { 
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+  
+  /* Disable all hover effects on mobile */
+  .group:hover .group-hover\:-translate-y-1,
+  .hover\:-translate-y-0\.5:hover,
+  .hover\:-translate-y-1:hover {
+    transform: none !important;
+  }
+  
+  /* Remove all shadows on mobile for performance */
+  .shadow-sm, .shadow, .shadow-md, .shadow-lg {
+    box-shadow: none !important;
+  }
+  
+  /* Simplify hex badge effects */
+  .h-24, .h-28 {
+    box-shadow: none !important;
+    transform: none !important;
+  }
+  
+  /* Disable all backdrop filters */
+  * {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  
+  /* Disable all mix-blend-modes */
+  * {
+    mix-blend-mode: normal !important;
+  }
+  
+  /* Disable all will-change properties */
+  * {
+    will-change: auto !important;
+  }
+}
+
+/* Additional mobile device optimizations */
+.mobile-device {
+  /* Force hardware acceleration only where absolutely necessary */
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  
+  /* Disable all animations globally */
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+  
+  /* Optimize scrolling */
+  -webkit-overflow-scrolling: touch;
+  
+  /* Disable text selection animations */
+  -webkit-tap-highlight-color: transparent;
+  
+  /* Optimize font rendering */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
