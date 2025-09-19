@@ -974,12 +974,12 @@ export default function App() {
   // Background safe-guard with mobile performance consideration
   let bg: React.ReactNode = null;
   try {
-    if (!prefersReducedMotion && !isLowEnd && !isMobileDevice) {
+    if (!prefersReducedMotion && !isLowEnd && !isMobile) {
       // Desktop devices and desktop site on mobile get animated background
       bg = <GoldenBackground mobile={isMobile} />;
-    } else if (isMobileDevice) {
-      // Only actual mobile devices get simple static background
-      console.log('Mobile device - simple background applied:', { isMobile, isLowEnd, isStruggling, isMobileDevice });
+    } else if (isMobile) {
+      // Mobile viewport gets simple static background
+      console.log('Mobile viewport - simple background applied:', { isMobile, isLowEnd, isStruggling, isMobileDevice });
       bg = (
         <div className="fixed inset-0 -z-10">
           {/* Simple Fibonacci-inspired background */}
