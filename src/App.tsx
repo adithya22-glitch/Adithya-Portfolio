@@ -155,12 +155,13 @@ const useLowEndDevice = () => {
   return isLowEnd;
 };
 
-// Performance monitoring for struggling devices
+// Performance monitoring for struggling devices (mobile only)
 const usePerformanceMonitor = () => {
   const [isStruggling, setIsStruggling] = useState(false);
+  const isMobile = useIsMobile();
   
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined" || !isMobile) return;
     
     let frameCount = 0;
     let lastTime = performance.now();
@@ -174,7 +175,7 @@ const usePerformanceMonitor = () => {
         frameCount = 0;
         lastTime = currentTime;
         
-        // If FPS is consistently below 30, consider it struggling
+        // If FPS is consistently below 30 on mobile, consider it struggling
         if (fps < 30) {
           setIsStruggling(true);
         }
@@ -184,7 +185,7 @@ const usePerformanceMonitor = () => {
     };
     
     requestAnimationFrame(checkPerformance);
-  }, []);
+  }, [isMobile]);
   
   return isStruggling;
 };
@@ -946,18 +947,23 @@ export default function App() {
   // Background safe-guard with mobile performance consideration
   let bg: React.ReactNode = null;
   try {
-    if (!prefersReducedMotion && !isLowEnd && !isMobile && !isStruggling) {
-      // Only high-performance desktop devices get animated background
+    if (!prefersReducedMotion && !isLowEnd && !isMobile) {
+      // Desktop devices get animated background (struggling detection only applies to mobile)
       bg = <GoldenBackground mobile={isMobile} />;
-    } else if (isMobile || isLowEnd || isStruggling) {
-      // Mobile, low-end, and struggling devices get simple static background
+    } else {
+      // Mobile and low-end devices get subtle animated background
+      console.log('Mobile background applied:', { isMobile, isLowEnd, isStruggling });
       bg = (
-        <div
-          className="fixed inset-0 -z-10"
-          style={{
-            background: "radial-gradient(800px 400px at 50% -10%, rgba(191,219,254,0.1), transparent 80%)",
-          }}
-        />
+        <div className="fixed inset-0 -z-10 mobile-bg">
+          <div
+            className="mobile-bg-gradient"
+            style={{
+              background: isStruggling 
+                ? "radial-gradient(600px 300px at 50% -10%, rgba(191,219,254,0.5), transparent 70%)"
+                : "radial-gradient(800px 400px at 50% -10%, rgba(191,219,254,0.6), transparent 60%)",
+            }}
+          />
+        </div>
       );
     }
   } catch {
@@ -971,6 +977,7 @@ export default function App() {
       />
     );
   }
+
 
   return (
     <div className={`relative min-h-svh text-neutral-900 ${isLowEnd ? 'low-end-device' : ''}`}>
