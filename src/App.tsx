@@ -53,7 +53,7 @@ const Container = ({
   className?: string;
   children: React.ReactNode;
 }) => (
-  <section id={id} className={`scroll-mt-24 py-12 sm:py-16 md:py-24 ${className}`}>
+  <section id={id} className={`scroll-mt-32 py-12 sm:py-16 md:py-24 ${className}`}>
     <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 md:px-8">{children}</div>
   </section>
 );
@@ -153,6 +153,30 @@ const useLowEndDevice = () => {
   }, []);
   
   return isLowEnd;
+};
+
+// Check if user is on actual mobile device (not just screen size)
+const useIsMobileDevice = () => {
+  const [isMobileDevice, setIsMobileDevice] = useState(false);
+  
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    
+    // Check for actual mobile device indicators
+    const isMobileDevice = 
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+      (navigator.maxTouchPoints && navigator.maxTouchPoints > 1);
+    
+    console.log('Mobile device detection:', { 
+      userAgent: navigator.userAgent, 
+      maxTouchPoints: navigator.maxTouchPoints,
+      isMobileDevice 
+    });
+    
+    setIsMobileDevice(Boolean(isMobileDevice));
+  }, []);
+  
+  return isMobileDevice;
 };
 
 // Performance monitoring for struggling devices (mobile only)
@@ -270,7 +294,7 @@ const useScrollSpy = (ids: string[]) => {
 };
 
 // === Golden Fibonacci Background ===
-const GoldenBackground = ({ mobile = false }: { mobile?: boolean }) => {
+const GoldenBackground = ({ mobile = false, static: isStatic = false }: { mobile?: boolean; static?: boolean }) => {
   const PHI = (1 + Math.sqrt(5)) / 2;
   const fibs = mobile ? [1, 2, 5, 8] : [1, 1, 2, 3, 5, 8, 13, 21]; // Fewer elements on mobile
 
@@ -292,22 +316,24 @@ const GoldenBackground = ({ mobile = false }: { mobile?: boolean }) => {
               hsl(${hue2} 80% 55% / .35) 60%,
               transparent 100%)`;
 
-        const delay    = `${(f * 0.25).toFixed(2)}s`;
-        const rotDur   = mobile ? `${60 + i * 8}s` : `${22 + i * 3}s`; // Much slower on mobile
-        const floatDur = mobile ? `${40 + i * 6}s` : `${10 + i * 2}s`; // Much slower on mobile
-        const gradDur  = mobile ? `${80 + i * 8}s` : `${16 + i * 2}s`; // Much slower on mobile
+        const delay    = isStatic ? "0s" : `${(f * 0.25).toFixed(2)}s`;
+        const rotDur   = isStatic ? "0s" : (mobile ? `${60 + i * 8}s` : `${22 + i * 3}s`); // Much slower on mobile
+        const floatDur = isStatic ? "0s" : (mobile ? `${40 + i * 6}s` : `${10 + i * 2}s`); // Much slower on mobile
+        const gradDur  = isStatic ? "0s" : (mobile ? `${80 + i * 8}s` : `${16 + i * 2}s`); // Much slower on mobile
         const opacity  = mobile
-          ? Math.min(0.25, 0.1 + i * 0.03) // Much lower opacity on mobile
+          ? isStatic 
+            ? Math.min(0.6, 0.3 + i * 0.08) // Higher opacity for static mobile background
+            : Math.min(0.25, 0.1 + i * 0.03) // Much lower opacity on mobile
           : Math.min(0.75, 0.22 + i * 0.06);
 
-        const mobileFloatOnly: CSSProperties | undefined = mobile
+        const mobileFloatOnly: CSSProperties | undefined = mobile && !isStatic
           ? { animation: `fib-float var(--floatDur) ease-in-out infinite alternate` } // no hue-rotate on mobile
           : undefined;
 
         return (
           <div
             key={i}
-            className="absolute left-1/2 top-1/2 fib-rotate"
+            className={`absolute left-1/2 top-1/2 ${isStatic ? '' : 'fib-rotate'}`}
             style={
               {
                 width: w,
@@ -319,7 +345,7 @@ const GoldenBackground = ({ mobile = false }: { mobile?: boolean }) => {
             }
           >
             <div
-              className="fib-float rounded-[28px] mix-blend-multiply"
+              className={`rounded-[28px] mix-blend-multiply ${isStatic ? '' : 'fib-float'}`}
               style={
                 {
                   width: "100%",
@@ -415,7 +441,7 @@ const Nav = () => {
 // ---------- HERO ----------
 const Hero = () => {
   return (
-    <Container id="home" className="relative">
+    <Container id="home" className="relative pt-20">
       <div className="pointer-events-none absolute inset-0 -z-10 opacity-50 [background:radial-gradient(1200px_600px_at_50%_-10%,theme(colors.blue.200),transparent_60%)]" />
       <div className="grid items-center gap-6 sm:gap-10 md:grid-cols-2">
         <div>
@@ -933,6 +959,7 @@ export default function App() {
   const isMobile = useIsMobile();
   const isLowEnd = useLowEndDevice();
   const isStruggling = usePerformanceMonitor();
+  const isMobileDevice = useIsMobileDevice();
 
   // Add mobile class to body for CSS targeting
   useEffect(() => {
@@ -947,32 +974,70 @@ export default function App() {
   // Background safe-guard with mobile performance consideration
   let bg: React.ReactNode = null;
   try {
-    if (!prefersReducedMotion && !isLowEnd && !isMobile) {
-      // Desktop devices get animated background (struggling detection only applies to mobile)
+    if (!prefersReducedMotion && !isLowEnd && !isMobileDevice) {
+      // Desktop devices and desktop site on mobile get animated background
       bg = <GoldenBackground mobile={isMobile} />;
-    } else {
-      // Mobile and low-end devices get subtle animated background
-      console.log('Mobile background applied:', { isMobile, isLowEnd, isStruggling });
+    } else if (isMobileDevice) {
+      // Only actual mobile devices get simple static background
+      console.log('Mobile device - simple background applied:', { isMobile, isLowEnd, isStruggling, isMobileDevice });
       bg = (
-        <div className="fixed inset-0 -z-10 mobile-bg">
-          <div
-            className="mobile-bg-gradient"
+        <div className="fixed inset-0 -z-10">
+          {/* Simple Fibonacci-inspired background */}
+          <div 
+            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full opacity-30"
             style={{
-              background: isStruggling 
-                ? "radial-gradient(600px 300px at 50% -10%, rgba(191,219,254,0.5), transparent 70%)"
-                : "radial-gradient(800px 400px at 50% -10%, rgba(191,219,254,0.6), transparent 60%)",
+              background: "radial-gradient(circle, rgba(59, 130, 246, 0.4) 0%, rgba(147, 197, 253, 0.2) 50%, transparent 70%)",
+            }}
+          />
+          <div 
+            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full opacity-20"
+            style={{
+              background: "radial-gradient(circle, rgba(37, 99, 235, 0.3) 0%, rgba(96, 165, 250, 0.1) 60%, transparent 80%)",
+              transform: "translate(-50%, -50%) rotate(45deg)",
+            }}
+          />
+          <div 
+            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full opacity-25"
+            style={{
+              background: "radial-gradient(circle, rgba(29, 78, 216, 0.4) 0%, rgba(59, 130, 246, 0.2) 50%, transparent 70%)",
+              transform: "translate(-50%, -50%) rotate(90deg)",
             }}
           />
         </div>
       );
+    } else {
+      // Fallback for any other case
+      console.log('Fallback background applied:', { isMobile, isLowEnd, isStruggling, isMobileDevice });
+      bg = (
+        <div
+          className="fixed inset-0 -z-10"
+          style={{
+            background: "radial-gradient(800px 400px at 50% -10%, rgba(191,219,254,0.6), transparent 60%)",
+          }}
+        />
+      );
     }
-  } catch {
+  } catch (error) {
+    console.log('Background error, using fallback:', error);
     bg = (
       <div
         className="fixed inset-0 -z-10"
         style={{
           background:
             "radial-gradient(1200px 600px at 50% -10%, rgba(191,219,254,0.35), transparent 60%)",
+        }}
+      />
+    );
+  }
+
+  // Ensure mobile devices always get some background
+  if (isMobile && !bg) {
+    console.log('Mobile fallback background applied');
+    bg = (
+      <div
+        className="fixed inset-0 -z-10"
+        style={{
+          background: "radial-gradient(800px 400px at 50% -10%, rgba(191,219,254,0.6), transparent 60%)",
         }}
       />
     );
