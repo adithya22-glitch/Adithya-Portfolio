@@ -1,11 +1,11 @@
-import { useEffect, useState, useRef, type CSSProperties } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import type React from "react";
+import { motion } from "framer-motion";
 import {
   Github, Linkedin, Mail, ExternalLink, Menu, X,
   Code2, Atom, Database, Brain
 } from "lucide-react";
 
-import ViewCounter from "./components/ViewCounter";
 
 import IIITLogo from "./assets/WXlogo/IIIT_logo_transparent.gif";
 import NaturescanLogo from "./assets/WXlogo/naturescan.jpg";
@@ -38,10 +38,6 @@ import typescriptIcon from "./assets/icons/typescript.svg";
 import npmIcon from "./assets/icons/npm.svg";
 
 import resumePdf from "./assets/Adithya_Varambally_Resume.pdf";
-
-// ---------- Utils ----------
-const slugify = (s: string) =>
-  s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
 
 // ---------- Shared UI ----------
 const Container = ({
@@ -215,26 +211,6 @@ const usePerformanceMonitor = () => {
 };
 
 /* ===== Reveal-on-scroll ===== */
-const useInViewOnce = (options?: IntersectionObserverInit) => {
-  const ref = useRef<HTMLElement | null>(null);
-  const [inView, setInView] = useState(false);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el || inView || typeof IntersectionObserver === "undefined") return;
-    const obs = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) {
-        setInView(true);
-        obs.disconnect();
-      }
-    }, options);
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, [inView, options]);
-
-  return { ref, inView };
-};
-
 const Reveal = ({
   as: Tag = "div",
   className = "",
@@ -247,28 +223,30 @@ const Reveal = ({
   amount?: number;
 }) => {
   const isMobile = useIsMobile();
-  const { ref, inView } = useInViewOnce({ threshold: amount, rootMargin: "0px 0px -10% 0px" });
+  const reduceMotion = usePrefersReducedMotion();
+  const MotionTag = motion(Tag as any);
 
-  // On mobile, always show content immediately without animations
-  if (isMobile) {
+  if (reduceMotion) {
     return (
-      <Tag
-        ref={ref}
-        className={`${className}`}
-      >
+      <Tag className={className}>
         {children}
       </Tag>
     );
   }
 
-  // Desktop: use reveal animations
   return (
-    <Tag
-      ref={ref}
-      className={`reveal ${inView ? "reveal--in" : ""} ${className}`}
+    <MotionTag
+      className={className}
+      initial={{ opacity: 0, y: isMobile ? 10 : 16, scale: isMobile ? 1 : 0.98 }}
+      whileInView={{ opacity: 1, y: 0, scale: 1 }}
+      viewport={{ once: true, amount, margin: "0px 0px -10% 0px" }}
+      transition={{
+        duration: isMobile ? 0.45 : 0.6,
+        ease: [0.22, 1, 0.36, 1],
+      }}
     >
       {children}
-    </Tag>
+    </MotionTag>
   );
 };
 
@@ -622,35 +600,37 @@ type ExpItem = {
 
 const experienceData: ExpItem[] = [
   {
-    title: "Web Developer",
-    company: "NatureScan LLP, Bengaluru",
-    period: "07/2022 – 03/2023",
+    title: "Software Engineer",
+    company: "Naturescan LLP | Bangalore, India",
+    period: "Mar 2022 – Mar 2023 (1 year)",
     bullets: [
-      "Shipped high-performance sites; +12% revenue & reach uplift above forecast.",
-      "Launched user-centric features that grew traffic and digital asset value.",
-      "Improved SEO and cross-browser reliability with testing & optimizations.",
+      "Drove 12% revenue and user growth by building scalable, high-performance web applications with HTML, CSS, and JavaScript.",
+      "Increased digital asset value by up to 20% through cross-functional collaboration and user-centric feature development.",
+      "Improved system reliability by 65% via rigorous testing, debugging, and performance optimization across browsers and devices.",
+      "Boosted organic traffic by 35% and achieved top-10 SEO rankings through data-driven optimization strategies.",
     ],
     image: NaturescanLogo,
   },
   {
-    title: "Trainee-Engineer",
-    company: "Pacecom Technologies Pvt. Ltd., Bengaluru",
-    period: "06/2021 – 04/2022",
+    title: "Trainee Engineer",
+    company: "Paceetch Technologies | Bangalore, India",
+    period: "Jun 2021 – Apr 2022 (10 months)",
     bullets: [
-      "Enhanced model accuracy (+15%) and cut false positives (–10%) via metrics & confusion-matrix analysis.",
-      "Generated cross-validation reports for 10k+ annotations to ensure model reliability.",
-      "Delivered ADAS/iris-detection prototypes and analytics for automotive clients (e.g., VEONEER, APTIV).",
+      "Improved ML model accuracy by 15% and reduced false positives by 10% through metric optimization and structured evaluation.",
+      "Ensured data integrity and reliability across 10,000+ annotations using cross-validation and bias-reduction techniques.",
+      "Enhanced ADAS and autonomous driving performance by 35%, reducing misclassification errors by 20% via optimized annotation and modeling.",
+      "Increased AEB validation accuracy by 20% for VEONEER and Aptiv through data-driven AI workflows.",
     ],
     image: PacecomLogo,
   },
   {
     title: "Intern",
-    company: "Indian Institute of Information Technology (IIIT) Allahabad",
-    period: "07/2019 – 08/2019",
+    company: "Indian Institute of Information Technology | Prayagraj, India",
+    period: "Jul 2019 – Aug 2019 (1 month)",
     bullets: [
-      "Built an Image Processing unit using Optical Flow in Python.",
-      "Optimized for real-time CCTV insights with minimal compute.",
-      "Improved interpretation of live streams for resource-limited settings.",
+      "Reduced compute usage by 30% by building a scalable real-time computer vision pipeline in Python using optical flow.",
+      "Improved video stream reliability and accuracy by 25% through algorithm optimization under constrained hardware.",
+      "Increased latency performance by 20% across multi-camera systems using concurrent processing and distributed pipeline design.",
     ],
     image: IIITLogo,
   },
@@ -705,7 +685,7 @@ const Experience = () => (
 
               {/* logo */}
               <div className={`mt-4 md:mt-0 md:row-start-1 flex items-center justify-start md:justify-center ${isLeft ? "md:col-start-2" : "md:col-start-1"}`}>
-                <div className="h-14 w-14 rounded-xl bg-neutral-100 flex items-center justify-center overflow-hidden ring-1 ring-neutral-200">
+                <div className="h-24 w-24 md:h-28 md:w-28 rounded-2xl bg-white/95 p-2.5 flex items-center justify-center overflow-hidden border border-neutral-200 shadow-[0_8px_24px_rgba(0,0,0,0.12)] ring-1 ring-white/70 backdrop-blur-sm">
                   <img src={item.image} alt={item.company} loading="lazy" decoding="async" className="h-full w-full object-contain" />
                 </div>
               </div>
@@ -781,7 +761,6 @@ const Projects = () => (
     </div>
     <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {projects.map((p) => {
-        const id = `project-${slugify(p.title)}`;
         const card = (
           <div className="group rounded-2xl border bg-white p-5 transition hover:-translate-y-1 hover:shadow">
             <div className="aspect-video w-full overflow-hidden rounded-xl bg-neutral-100">
@@ -796,7 +775,6 @@ const Projects = () => (
             </div>
             <div className="mt-4 flex items-center justify-between">
               <div className="font-headers font-semibold">{p.title}</div>
-              <ViewCounter id={id} />
             </div>
             <p className="mt-1 text-sm text-neutral-600">{p.desc}</p>
             <div className="mt-3 flex flex-wrap gap-2">
@@ -809,7 +787,16 @@ const Projects = () => (
           </div>
         );
         return p.href && p.href !== "#"
-          ? <a key={p.title} href={p.href} target="_blank" rel="noopener noreferrer">{card}</a>
+          ? (
+            <a
+              key={p.title}
+              href={p.href}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {card}
+            </a>
+          )
           : <div key={p.title} aria-disabled className="opacity-90 cursor-default">{card}</div>;
       })}
     </div>
@@ -961,24 +948,14 @@ export default function App() {
   const isStruggling = usePerformanceMonitor();
   const isMobileDevice = useIsMobileDevice();
 
-  // Add mobile class to body for CSS targeting
-  useEffect(() => {
-    if (isMobile) {
-      document.body.classList.add('mobile-device');
-    } else {
-      document.body.classList.remove('mobile-device');
-    }
-    return () => document.body.classList.remove('mobile-device');
-  }, [isMobile]);
-
   // Background safe-guard with mobile performance consideration
   let bg: React.ReactNode = null;
   try {
-    if (!prefersReducedMotion && !isLowEnd && !isMobile) {
-      // Desktop devices and desktop site on mobile get animated background
+    if (!prefersReducedMotion && !isLowEnd && !isStruggling) {
+      // Keep animated background on both desktop and mobile browsers.
       bg = <GoldenBackground mobile={isMobile} />;
     } else if (isMobile) {
-      // Mobile viewport gets simple static background
+      // Low-end or reduced-motion mobile fallback.
       console.log('Mobile viewport - simple background applied:', { isMobile, isLowEnd, isStruggling, isMobileDevice });
       bg = (
         <div className="fixed inset-0 -z-10">

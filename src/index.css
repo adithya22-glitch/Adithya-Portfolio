@@ -202,14 +202,16 @@ select { cursor: default !important; }
   animation-delay: var(--delay, 0s);
   will-change: transform, opacity;
   transform-style: preserve-3d;
+  backface-visibility: hidden;
 }
 
 .fib-float {
   animation:
-    fib-float var(--floatDur, 14s) ease-in-out infinite alternate,
+    fib-float var(--floatDur, 14s) cubic-bezier(.42, 0, .58, 1) infinite alternate,
     fib-hue   var(--gradDur, 20s) linear infinite;
   animation-delay: var(--delay, 0s);
   will-change: transform, filter, opacity;
+  backface-visibility: hidden;
 }
 
 @keyframes fib-rotate {
@@ -218,8 +220,8 @@ select { cursor: default !important; }
 }
 
 @keyframes fib-float {
-  0%   { transform: translateY(-6%); }
-  100% { transform: translateY(6%); }
+  0%   { transform: translate3d(0, -4%, 0); }
+  100% { transform: translate3d(0, 4%, 0); }
 }
 
 @keyframes fib-hue {
@@ -274,18 +276,6 @@ select { cursor: default !important; }
 @media (max-width: 640px) {
   html { font-size: 16px; }
   
-  /* COMPLETELY DISABLE ALL ANIMATIONS ON MOBILE */
-  *, *::before, *::after {
-    animation: none !important;
-    transition: none !important;
-    transform: none !important;
-  }
-  
-  /* Disable all background animations */
-  .fib-rotate, .fib-float {
-    display: none !important;
-  }
-  
   /* Disable header blur on mobile for better performance */
   .supports-\[backdrop-filter\]\:bg-white\/60 { 
     background: #ffffff !important; 
@@ -309,31 +299,10 @@ select { cursor: default !important; }
     transform: none !important;
   }
   
-  /* Remove all shadows on mobile for performance */
-  .shadow-sm, .shadow, .shadow-md, .shadow-lg {
-    box-shadow: none !important;
-  }
-  
-  /* Simplify hex badge effects */
-  .h-24, .h-28 {
-    box-shadow: none !important;
-    transform: none !important;
-  }
-  
-  /* Disable all backdrop filters */
-  * {
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-  }
-  
-  /* Disable all mix-blend-modes */
-  * {
-    mix-blend-mode: normal !important;
-  }
-  
-  /* Disable all will-change properties */
-  * {
-    will-change: auto !important;
+  /* Keep heavy compositing effects lighter on mobile while preserving motion. */
+  .fib-float {
+    animation-name: fib-float !important; /* drop hue rotation on mobile */
+    filter: none !important;
   }
   
   /* Ensure proper spacing for mobile header */
