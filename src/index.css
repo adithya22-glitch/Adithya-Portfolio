@@ -5,8 +5,14 @@
 /* Smooth scrolling */
 html { scroll-behavior: smooth; }
 
-/* Prevent accidental horizontal scrolling on small screens */
-html, body { overflow-x: hidden; }
+/* Prevent accidental horizontal scrolling on small screens.
+   `clip` (unlike `hidden`) doesn't turn <body> into a second scroll container,
+   which was breaking smooth, GPU-threaded scrolling. */
+html { overflow-x: hidden; }
+body { overflow-x: clip; }
+
+/* Lenis drives the scroll position itself; native smooth-scroll would fight it */
+html.lenis.lenis-smooth { scroll-behavior: auto !important; }
 
 /* Make media elements responsive by default */
 img, video, canvas, svg { max-width: 100%; height: auto; }
@@ -195,23 +201,44 @@ select { cursor: default !important; }
 }
 
 /* =========================
-   Fibonacci background animations (used by <GoldenBackground/>)
+   Fibonacci background (used by <GoldenBackground/>)
+   Only transform is animated, so everything runs on the GPU compositor.
    ========================= */
+.golden-bg {
+  position: fixed;
+  inset: 0;
+  /* lvh = largest viewport height, so no gap appears when the mobile URL bar hides */
+  height: 100vh;
+  height: 100lvh;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  contain: strict;
+}
+
+.golden-shape {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.golden-shape__fill {
+  width: 100%;
+  height: 100%;
+  border-radius: 28px;
+}
+
 .fib-rotate {
   animation: fib-rotate var(--rotDur, 30s) linear infinite;
   animation-delay: var(--delay, 0s);
-  will-change: transform, opacity;
-  transform-style: preserve-3d;
-  backface-visibility: hidden;
+  will-change: transform;
 }
 
 .fib-float {
-  animation:
-    fib-float var(--floatDur, 14s) cubic-bezier(.42, 0, .58, 1) infinite alternate,
-    fib-hue   var(--gradDur, 20s) linear infinite;
+  animation: fib-float var(--floatDur, 14s) cubic-bezier(.42, 0, .58, 1) infinite alternate;
   animation-delay: var(--delay, 0s);
-  will-change: transform, filter, opacity;
-  backface-visibility: hidden;
+  will-change: transform;
 }
 
 @keyframes fib-rotate {
@@ -224,156 +251,31 @@ select { cursor: default !important; }
   100% { transform: translate3d(0, 4%, 0); }
 }
 
-@keyframes fib-hue {
-  0%   { filter: hue-rotate(0deg); }
-  100% { filter: hue-rotate(360deg); }
+/* Reduced motion: keep the graphics, just stop them moving */
+@media (prefers-reduced-motion: reduce) {
+  .fib-rotate, .fib-float { animation: none !important; }
 }
 
 /* =========================
-   Motion & mobile adjustments
+   Mobile adjustments
    ========================= */
+@media (max-width: 640px) {
+  html { font-size: 16px; }
 
-/* Pause animations when page is not visible */
-.fib-rotate, .fib-float { 
-  animation-play-state: var(--pauseAnims, running); 
-}
-
-/* Global reduced motion fallback for other animations */
-@media (prefers-reduced-motion: reduce) {
-  .reveal,
-  .fib-rotate,
-  .fib-float { animation: none !important; transition: none !important; }
-}
-
-/* Low-end device optimizations */
-.low-end-device {
-  /* Disable all animations and transitions */
-  * {
-    animation: none !important;
-    transition: none !important;
-  }
-  
-  /* Simplify all shadows */
-  * {
-    box-shadow: none !important;
-  }
-  
-  /* Remove backdrop filters */
-  * {
+  /* Header blur is expensive while scrolling on phones; use a solid bar */
+  .supports-\[backdrop-filter\]\:bg-white\/60 { background: #ffffff !important; }
+  header {
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
   }
-  
-  /* Remove transforms */
-  .hover\:-translate-y-0\.5:hover,
-  .group:hover .group-hover\:-translate-y-1 {
-    transform: none !important;
-  }
-}
 
-/* On small screens, tone down background intensity
-   (and slightly reduce base font-size for spacing) */
-@media (max-width: 640px) {
-  html { font-size: 16px; }
-  
-  /* Disable header blur on mobile for better performance */
-  .supports-\[backdrop-filter\]\:bg-white\/60 { 
-    background: #ffffff !important; 
-  }
-  header { 
-    backdrop-filter: none !important; 
-    -webkit-backdrop-filter: none !important; 
-  }
-  
-  /* Disable all reveal animations on mobile */
-  .reveal { 
-    opacity: 1 !important;
-    transform: none !important;
-    filter: none !important;
-  }
-  
-  /* Disable all hover effects on mobile */
+  /* No hover lift on touch screens */
   .group:hover .group-hover\:-translate-y-1,
   .hover\:-translate-y-0\.5:hover,
   .hover\:-translate-y-1:hover {
     transform: none !important;
   }
-  
-  /* Keep heavy compositing effects lighter on mobile while preserving motion. */
-  .fib-float {
-    animation-name: fib-float !important; /* drop hue rotation on mobile */
-    filter: none !important;
-  }
-  
-  /* Ensure proper spacing for mobile header */
-  #home {
-    padding-top: 7rem !important; /* 112px - more generous spacing */
-  }
-  
-  /* Ensure scroll margin works on mobile */
-  section {
-    scroll-margin-top: 7rem !important; /* 112px */
-  }
-  
-  /* Additional mobile-specific spacing */
-  .pt-20 {
-    padding-top: 7rem !important; /* Override any existing padding */
-  }
-  
-  /* Ensure mobile background is visible */
-  .fixed.inset-0.-z-10 {
-    z-index: -1 !important;
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
-  }
-}
 
-/* Mobile background animations - subtle and performance-friendly */
-.mobile-bg-gradient {
-  width: 100%;
-  height: 100%;
-  animation: mobile-bg-pulse 8s ease-in-out infinite alternate;
-}
-
-@keyframes mobile-bg-pulse {
-  0% {
-    opacity: 0.6;
-    transform: scale(1);
-  }
-  100% {
-    opacity: 0.8;
-    transform: scale(1.05);
-  }
-}
-
-/* Additional mobile device optimizations */
-.mobile-device {
-  /* Force hardware acceleration only where absolutely necessary */
-  -webkit-transform: translateZ(0);
-  transform: translateZ(0);
-  
-  /* Disable all animations globally except mobile background */
-  *, *::before, *::after {
-    animation: none !important;
-    transition: none !important;
-    transform: none !important;
-  }
-  
-  /* Allow mobile background animation */
-  .mobile-bg-gradient {
-    animation: mobile-bg-pulse 8s ease-in-out infinite alternate !important;
-  }
-  
-  /* Optimize scrolling */
-  -webkit-overflow-scrolling: touch;
-  
-  /* Disable text selection animations */
-  -webkit-tap-highlight-color: transparent;
-  
-  /* Optimize font rendering */
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  #home { padding-top: 7rem !important; }
+  section { scroll-margin-top: 7rem !important; }
 }

@@ -1,6 +1,8 @@
 import { useEffect, useState, type CSSProperties } from "react";
 import type React from "react";
 import { motion } from "framer-motion";
+import Lenis from "lenis";
+import "lenis/dist/lenis.css";
 import {
   Github, Linkedin, Mail, ExternalLink, Menu, X,
   Code2, Atom, Database, Brain
@@ -11,12 +13,13 @@ import IIITLogo from "./assets/WXlogo/IIIT_logo_transparent.gif";
 import NaturescanLogo from "./assets/WXlogo/naturescan.jpg";
 import PacecomLogo from "./assets/WXlogo/pacecom.jpg";
 
-import ComingSoonImg from "./assets/projects/comingsoon.jpg";
-import SelfDrivingBusImg from "./assets/projects/selfdrivingbus.jpg";
-import ESGBankImg from "./assets/projects/ESGBank.png";
-import imageToTextImg from "./assets/projects/imagetotext.png";
-import robertGreeneImg from "./assets/projects/robertgreenepng.png";
-import manyProjectsImg from "./assets/projects/manyprojects.png";
+import ComingSoonImg from "./assets/projects/comingsoon.webp";
+import BurobotImg from "./assets/projects/burobot.webp";
+import SelfDrivingBusImg from "./assets/projects/selfdrivingbus.webp";
+import ESGBankImg from "./assets/projects/ESGBank.webp";
+import imageToTextImg from "./assets/projects/imagetotext.webp";
+import robertGreeneImg from "./assets/projects/robertgreenepng.webp";
+import manyProjectsImg from "./assets/projects/manyprojects.webp";
 
 import apacheairflow from "./assets/icons/apacheairflow.svg";
 import cppIcon from "./assets/icons/Cpp.svg";
@@ -98,152 +101,61 @@ const Button = ({ as = "button", children, className = "", ...props }: ButtonPro
 
 // ---------- SAFE media hooks (no crash on older browsers) ----------
 const useSafeMatch = (query: string, initial = false) => {
-  const [matches, setMatches] = useState<boolean>(initial);
+  const [matches, setMatches] = useState<boolean>(() =>
+    typeof window !== "undefined" && typeof window.matchMedia === "function"
+      ? window.matchMedia(query).matches
+      : initial
+  );
   useEffect(() => {
     if (typeof window === "undefined" || typeof window.matchMedia !== "function") return;
     const mq = window.matchMedia(query);
-
-    const onChange = (e: MediaQueryListEvent | MediaQueryList) => {
-      // handle both modern and old Safari callback shapes
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const anyE = e as any;
-      setMatches(Boolean(anyE.matches));
-    };
-
-    setMatches(mq.matches);
-
-    // modern
+    const onChange = () => setMatches(mq.matches);
+    onChange();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const anyMq = mq as any;
     if (typeof anyMq.addEventListener === "function") {
       anyMq.addEventListener("change", onChange);
       return () => anyMq.removeEventListener("change", onChange);
     }
-    // legacy
     if (typeof anyMq.addListener === "function") {
-      anyMq.addListener(onChange);
+      anyMq.addListener(onChange); // legacy Safari
       return () => anyMq.removeListener(onChange);
     }
-    return () => {};
   }, [query]);
   return matches;
 };
 const usePrefersReducedMotion = () => useSafeMatch("(prefers-reduced-motion: reduce)", false);
 const useIsMobile = () => useSafeMatch("(max-width: 640px)", false);
 
-// Performance detection for very low-end devices
-const useLowEndDevice = () => {
-  const [isLowEnd, setIsLowEnd] = useState(false);
-  
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    
-    // Check for low-end device indicators
-    const isLowEndDevice = 
-      navigator.hardwareConcurrency <= 2 || // 2 or fewer CPU cores
-      /Android.*Chrome\/[0-5]\./.test(navigator.userAgent) || // Old Android Chrome
-      /iPhone.*OS [0-9]_/.test(navigator.userAgent) || // Old iOS
-      (navigator as any).deviceMemory && (navigator as any).deviceMemory <= 2; // 2GB or less RAM
-    
-    setIsLowEnd(isLowEndDevice);
-  }, []);
-  
-  return isLowEnd;
-};
-
-// Check if user is on actual mobile device (not just screen size)
-const useIsMobileDevice = () => {
-  const [isMobileDevice, setIsMobileDevice] = useState(false);
-  
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    
-    // Check for actual mobile device indicators
-    const isMobileDevice = 
-      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-      (navigator.maxTouchPoints && navigator.maxTouchPoints > 1);
-    
-    console.log('Mobile device detection:', { 
-      userAgent: navigator.userAgent, 
-      maxTouchPoints: navigator.maxTouchPoints,
-      isMobileDevice 
-    });
-    
-    setIsMobileDevice(Boolean(isMobileDevice));
-  }, []);
-  
-  return isMobileDevice;
-};
-
-// Performance monitoring for struggling devices (mobile only)
-const usePerformanceMonitor = () => {
-  const [isStruggling, setIsStruggling] = useState(false);
-  const isMobile = useIsMobile();
-  
-  useEffect(() => {
-    if (typeof window === "undefined" || !isMobile) return;
-    
-    let frameCount = 0;
-    let lastTime = performance.now();
-    
-    const checkPerformance = () => {
-      frameCount++;
-      const currentTime = performance.now();
-      
-      if (currentTime - lastTime >= 1000) { // Check every second
-        const fps = frameCount;
-        frameCount = 0;
-        lastTime = currentTime;
-        
-        // If FPS is consistently below 30 on mobile, consider it struggling
-        if (fps < 30) {
-          setIsStruggling(true);
-        }
-      }
-      
-      requestAnimationFrame(checkPerformance);
-    };
-    
-    requestAnimationFrame(checkPerformance);
-  }, [isMobile]);
-  
-  return isStruggling;
-};
-
 /* ===== Reveal-on-scroll ===== */
+// Motion components are created once (not on every render) so elements never remount.
+const MOTION_TAGS = { div: motion.div, h1: motion.h1, h2: motion.h2 } as const;
+type RevealTag = keyof typeof MOTION_TAGS;
+
 const Reveal = ({
   as: Tag = "div",
   className = "",
   children,
-  amount = 0.2,
+  amount = 0.15,
 }: {
-  as?: any;
+  as?: RevealTag;
   className?: string;
   children: React.ReactNode;
   amount?: number;
 }) => {
   const isMobile = useIsMobile();
   const reduceMotion = usePrefersReducedMotion();
-  const MotionTag = motion(Tag as any);
 
-  if (reduceMotion) {
-    return (
-      <Tag className={className}>
-        {children}
-      </Tag>
-    );
-  }
+  if (reduceMotion) return <Tag className={className}>{children}</Tag>;
 
+  const MotionTag = MOTION_TAGS[Tag];
   return (
     <MotionTag
       className={className}
-      initial={{ opacity: 0, y: isMobile ? 10 : 16, scale: isMobile ? 1 : 0.98 }}
-      whileInView={{ opacity: 1, y: 0, scale: 1 }}
-      viewport={{ once: true, amount, margin: "0px 0px -10% 0px" }}
-      transition={{
-        duration: isMobile ? 0.45 : 0.6,
-        ease: [0.22, 1, 0.36, 1],
-      }}
+      initial={{ opacity: 0, y: isMobile ? 10 : 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount }}
+      transition={{ duration: isMobile ? 0.45 : 0.6, ease: [0.22, 1, 0.36, 1] }}
     >
       {children}
     </MotionTag>
@@ -255,85 +167,64 @@ const useScrollSpy = (ids: string[]) => {
   const [active, setActive] = useState(ids[0]);
   useEffect(() => {
     if (typeof IntersectionObserver === "undefined") return;
-    const observers: IntersectionObserver[] = [];
+    const obs = new IntersectionObserver(
+      (entries) => entries.forEach((e) => e.isIntersecting && setActive(e.target.id)),
+      { rootMargin: "-60% 0px -35% 0px" }
+    );
     ids.forEach((id) => {
       const el = document.getElementById(id);
-      if (!el) return;
-      const obs = new IntersectionObserver(
-        (entries) => entries.forEach((e) => e.isIntersecting && setActive(id)),
-        { rootMargin: "-60% 0px -35% 0px", threshold: [0, 0.2, 0.5, 1] }
-      );
-      obs.observe(el);
-      observers.push(obs);
+      if (el) obs.observe(el);
     });
-    return () => observers.forEach((o) => o.disconnect());
+    return () => obs.disconnect();
   }, [ids.join(",")]);
   return active;
 };
 
 // === Golden Fibonacci Background ===
-const GoldenBackground = ({ mobile = false, static: isStatic = false }: { mobile?: boolean; static?: boolean }) => {
-  const PHI = (1 + Math.sqrt(5)) / 2;
-  const fibs = mobile ? [1, 2, 5, 8] : [1, 1, 2, 3, 5, 8, 13, 21]; // Fewer elements on mobile
+// Performance notes (this is what keeps it smooth and visible on phones):
+//  - Shapes are sized in viewport units (max ~90vmax) instead of thousands of px, so each GPU
+//    layer stays small enough that mobile browsers don't silently drop it.
+//  - Only `transform` is animated (rotate + float). No animated filters or blend modes, which
+//    forced a full repaint of every shape on every frame.
+//  - With reduced motion the shapes are still drawn, just not animated.
+const PHI = (1 + Math.sqrt(5)) / 2;
+
+const GoldenBackground = ({ mobile = false, animate = true }: { mobile?: boolean; animate?: boolean }) => {
+  const fibs = mobile ? [1, 2, 3, 5, 8] : [1, 2, 3, 5, 8, 13];
 
   return (
-    <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+    <div aria-hidden className="golden-bg">
       {fibs.map((f, i) => {
-        const base = mobile ? 24 : 18; // Larger base on mobile for fewer elements
-        const sq = base * f;
+        const side = Math.min(90, 8 + f * 6); // vmax
         const isLandscape = i % 2 === 0;
-        const w = (isLandscape ? sq * PHI : sq) * (mobile ? 8 : 12); // Smaller on mobile
-        const h = (isLandscape ? sq : sq * PHI) * (mobile ? 8 : 12);
+        const w = Math.min(90, isLandscape ? side * PHI : side);
+        const h = Math.min(90, isLandscape ? side : side * PHI);
 
         const hue = (f * 137.5) % 360;
         const hue2 = (hue + 55) % 360;
-        const gradient = mobile 
-          ? `radial-gradient(70% 90% at 50% 50%, hsl(${hue} 60% 50% / .2) 0%, transparent 80%)` // Simpler gradient on mobile
-          : `radial-gradient(70% 90% at 50% 50%,
-              hsl(${hue} 80% 60% / .35) 0%,
-              hsl(${hue2} 80% 55% / .35) 60%,
-              transparent 100%)`;
-
-        const delay    = isStatic ? "0s" : `${(f * 0.25).toFixed(2)}s`;
-        const rotDur   = isStatic ? "0s" : (mobile ? `${60 + i * 8}s` : `${22 + i * 3}s`); // Much slower on mobile
-        const floatDur = isStatic ? "0s" : (mobile ? `${40 + i * 6}s` : `${10 + i * 2}s`); // Much slower on mobile
-        const gradDur  = isStatic ? "0s" : (mobile ? `${80 + i * 8}s` : `${16 + i * 2}s`); // Much slower on mobile
-        const opacity  = mobile
-          ? isStatic 
-            ? Math.min(0.6, 0.3 + i * 0.08) // Higher opacity for static mobile background
-            : Math.min(0.25, 0.1 + i * 0.03) // Much lower opacity on mobile
-          : Math.min(0.75, 0.22 + i * 0.06);
-
-        const mobileFloatOnly: CSSProperties | undefined = mobile && !isStatic
-          ? { animation: `fib-float var(--floatDur) ease-in-out infinite alternate` } // no hue-rotate on mobile
-          : undefined;
+        const opacity = mobile ? Math.min(0.55, 0.3 + i * 0.06) : Math.min(0.7, 0.25 + i * 0.07);
 
         return (
           <div
-            key={i}
-            className={`absolute left-1/2 top-1/2 ${isStatic ? '' : 'fib-rotate'}`}
+            key={f}
+            className={`golden-shape ${animate ? "fib-rotate" : ""}`}
             style={
               {
-                width: w,
-                height: h,
-                transform: "translate(-50%, -50%)",
-                ["--delay" as any]: delay,
-                ["--rotDur" as any]: rotDur,
+                width: `${w}vmax`,
+                height: `${h}vmax`,
+                "--delay": `-${(f * 1.7).toFixed(1)}s`,
+                "--rotDur": `${(mobile ? 40 : 28) + i * 6}s`,
               } as CSSProperties
             }
           >
             <div
-              className={`rounded-[28px] mix-blend-multiply ${isStatic ? '' : 'fib-float'}`}
+              className={`golden-shape__fill ${animate ? "fib-float" : ""}`}
               style={
                 {
-                  width: "100%",
-                  height: "100%",
-                  backgroundImage: gradient,
                   opacity,
-                  ["--delay" as any]: delay,
-                  ["--floatDur" as any]: floatDur,
-                  ["--gradDur" as any]: gradDur,
-                  ...mobileFloatOnly,
+                  backgroundImage: `radial-gradient(70% 90% at 50% 50%, hsl(${hue} 80% 60% / .45) 0%, hsl(${hue2} 80% 55% / .3) 60%, transparent 100%)`,
+                  "--delay": `-${(f * 0.9).toFixed(1)}s`,
+                  "--floatDur": `${(mobile ? 18 : 12) + i * 2}s`,
                 } as CSSProperties
               }
             />
@@ -364,7 +255,7 @@ const Nav = () => {
   }, []);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 w-full backdrop-blur supports-[backdrop-filter]:bg-white/60 border-b shadow-[0_1px_0_rgba(0,0,0,0.03)]">
+    <header className="fixed top-0 left-0 right-0 z-50 w-full bg-white/90 border-b shadow-[0_1px_0_rgba(0,0,0,0.03)]">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3 md:px-8">
         <a href="#home" className="group inline-flex items-center gap-2 font-bold">
           <span className="h-8 w-8 rounded-xl bg-gradient-to-br from-blue-600 to-emerald-400 grid place-items-center text-white shadow">A</span>
@@ -685,7 +576,7 @@ const Experience = () => (
 
               {/* logo */}
               <div className={`mt-4 md:mt-0 md:row-start-1 flex items-center justify-start md:justify-center ${isLeft ? "md:col-start-2" : "md:col-start-1"}`}>
-                <div className="h-24 w-24 md:h-28 md:w-28 rounded-2xl bg-white/95 p-2.5 flex items-center justify-center overflow-hidden border border-neutral-200 shadow-[0_8px_24px_rgba(0,0,0,0.12)] ring-1 ring-white/70 backdrop-blur-sm">
+                <div className="h-24 w-24 md:h-28 md:w-28 rounded-2xl bg-white/95 p-2.5 flex items-center justify-center overflow-hidden border border-neutral-200 shadow-[0_8px_24px_rgba(0,0,0,0.12)] ring-1 ring-white/70">
                   <img src={item.image} alt={item.company} loading="lazy" decoding="async" className="h-full w-full object-contain" />
                 </div>
               </div>
@@ -713,6 +604,13 @@ const projects: Project[] = [
     href: "#",
     img: ComingSoonImg,
     tags: ["React", "TypeScript", "RAG", "and much more"],
+  },
+  {
+    title: "Bürobot",
+    desc: "Human-in-the-loop AI: escalates to verified consultants when AI hits its limit, with full context transfer.",
+    href: "#",
+    img: BurobotImg,
+    tags: ["AI Escalation", "Expert Matching", "Context Transfer"],
   },
   {
     title: "Carla-RL Bus",
@@ -926,104 +824,51 @@ const Footer = () => (
   </footer>
 );
 
+// ---------- Smooth scrolling (mouse / trackpad only) ----------
+// Touch devices keep native scrolling, which is already smooth and has momentum.
+const HEADER_OFFSET = 72;
+
+const useSmoothScroll = (enabled: boolean) => {
+  useEffect(() => {
+    if (!enabled || typeof window === "undefined") return;
+    if (!window.matchMedia?.("(hover: hover) and (pointer: fine)").matches) return;
+
+    const lenis = new Lenis({ lerp: 0.1, autoRaf: true });
+
+    // In-page links (#about, #contact, ...) glide instead of jumping.
+    const onClick = (e: MouseEvent) => {
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      const a = (e.target as Element | null)?.closest?.('a[href^="#"]');
+      if (!a) return;
+      const hash = a.getAttribute("href") || "#";
+      e.preventDefault();
+      if (hash === "#") {
+        lenis.scrollTo(0);
+        return;
+      }
+      const el = document.getElementById(hash.slice(1));
+      if (!el) return;
+      lenis.scrollTo(el, { offset: -HEADER_OFFSET });
+      history.pushState(null, "", hash);
+    };
+    document.addEventListener("click", onClick);
+
+    return () => {
+      document.removeEventListener("click", onClick);
+      lenis.destroy();
+    };
+  }, [enabled]);
+};
+
 // ---------- APP ----------
 export default function App() {
-  useEffect(() => {
-    document.documentElement.classList.add("scroll-smooth");
-  }, []);
-
-  // Pause animations when page is not visible
-  useEffect(() => {
-    const onVis = () => {
-      document.documentElement.style.setProperty('--pauseAnims', document.hidden ? 'paused' : 'running');
-    };
-    document.addEventListener('visibilitychange', onVis);
-    onVis();
-    return () => document.removeEventListener('visibilitychange', onVis);
-  }, []);
-
   const prefersReducedMotion = usePrefersReducedMotion();
   const isMobile = useIsMobile();
-  const isLowEnd = useLowEndDevice();
-  const isStruggling = usePerformanceMonitor();
-  const isMobileDevice = useIsMobileDevice();
-
-  // Background safe-guard with mobile performance consideration
-  let bg: React.ReactNode = null;
-  try {
-    if (!prefersReducedMotion && !isLowEnd && !isStruggling) {
-      // Keep animated background on both desktop and mobile browsers.
-      bg = <GoldenBackground mobile={isMobile} />;
-    } else if (isMobile) {
-      // Low-end or reduced-motion mobile fallback.
-      console.log('Mobile viewport - simple background applied:', { isMobile, isLowEnd, isStruggling, isMobileDevice });
-      bg = (
-        <div className="fixed inset-0 -z-10">
-          {/* Simple Fibonacci-inspired background */}
-          <div 
-            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full opacity-30"
-            style={{
-              background: "radial-gradient(circle, rgba(59, 130, 246, 0.4) 0%, rgba(147, 197, 253, 0.2) 50%, transparent 70%)",
-            }}
-          />
-          <div 
-            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full opacity-20"
-            style={{
-              background: "radial-gradient(circle, rgba(37, 99, 235, 0.3) 0%, rgba(96, 165, 250, 0.1) 60%, transparent 80%)",
-              transform: "translate(-50%, -50%) rotate(45deg)",
-            }}
-          />
-          <div 
-            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full opacity-25"
-            style={{
-              background: "radial-gradient(circle, rgba(29, 78, 216, 0.4) 0%, rgba(59, 130, 246, 0.2) 50%, transparent 70%)",
-              transform: "translate(-50%, -50%) rotate(90deg)",
-            }}
-          />
-        </div>
-      );
-    } else {
-      // Fallback for any other case
-      console.log('Fallback background applied:', { isMobile, isLowEnd, isStruggling, isMobileDevice });
-      bg = (
-        <div
-          className="fixed inset-0 -z-10"
-          style={{
-            background: "radial-gradient(800px 400px at 50% -10%, rgba(191,219,254,0.6), transparent 60%)",
-          }}
-        />
-      );
-    }
-  } catch (error) {
-    console.log('Background error, using fallback:', error);
-    bg = (
-      <div
-        className="fixed inset-0 -z-10"
-        style={{
-          background:
-            "radial-gradient(1200px 600px at 50% -10%, rgba(191,219,254,0.35), transparent 60%)",
-        }}
-      />
-    );
-  }
-
-  // Ensure mobile devices always get some background
-  if (isMobile && !bg) {
-    console.log('Mobile fallback background applied');
-    bg = (
-      <div
-        className="fixed inset-0 -z-10"
-        style={{
-          background: "radial-gradient(800px 400px at 50% -10%, rgba(191,219,254,0.6), transparent 60%)",
-        }}
-      />
-    );
-  }
-
+  useSmoothScroll(!prefersReducedMotion);
 
   return (
-    <div className={`relative min-h-svh text-neutral-900 ${isLowEnd ? 'low-end-device' : ''}`}>
-      {bg}
+    <div className="relative min-h-svh text-neutral-900">
+      <GoldenBackground mobile={isMobile} animate={!prefersReducedMotion} />
       <div className="relative z-10">
         <Nav />
         <main>
