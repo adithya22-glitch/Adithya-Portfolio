@@ -504,7 +504,7 @@ const experienceData: ExpItem[] = [
   },
   {
     title: "Trainee Engineer",
-    company: "Paceetch Technologies | Bangalore, India",
+    company: "Pacecom Technologies | Bangalore, India",
     period: "Jun 2021 – Apr 2022 (10 months)",
     bullets: [
       "Improved ML model accuracy by 15% and reduced false positives by 10% through metric optimization and structured evaluation.",
